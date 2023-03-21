@@ -1,0 +1,10 @@
+RAMSAI
+======
+
+
+.. toctree::
+  :maxdepth: 1
+  :caption: Quickstart
+  :glob:
+
+  quickstart/start
