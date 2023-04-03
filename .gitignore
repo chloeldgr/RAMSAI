@@ -2,3 +2,7 @@ build/
 log/
 install/
 .vscode/
+3D_Printer/build
+3D_Printer/install
+3D_Printer/log
+3D_Printer/src/ros2_3d_printer_profile_capture/external
