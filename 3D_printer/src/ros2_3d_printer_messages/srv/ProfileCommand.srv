@@ -1,0 +1,6 @@
+float64 y_min
+float64 y_max
+float64 z_upper
+float64 step
+---
+bool validation
