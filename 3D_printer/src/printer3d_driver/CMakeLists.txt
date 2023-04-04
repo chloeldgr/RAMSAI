@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(ros2_3d_printer_control)
+project(printer3d_driver)
 
 # Default to C99
 if(NOT CMAKE_C_STANDARD)
@@ -38,7 +38,7 @@ endif()
 
 install(
   PROGRAMS
-    nodes/printer_control_node.py
+    nodes/gcode_monitor_node.py
     DESTINATION lib/${PROJECT_NAME}
 )
 

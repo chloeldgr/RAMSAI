@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(ros2_gocator_msgs)
+project(printer3d_gocator_msgs)
 
 
 if(NOT CMAKE_CXX_STANDARD)
