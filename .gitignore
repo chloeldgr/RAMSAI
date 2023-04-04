@@ -5,3 +5,4 @@ install/
 3D_Printer/build
 3D_Printer/install
 3D_Printer/log
+3D_printer/src/printer3d_profile_capture/external

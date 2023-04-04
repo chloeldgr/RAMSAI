@@ -122,7 +122,7 @@ class PrinterControlNode(Node):
         def sendGcodeSendingRequest(self,gcode):
 
                 """ Request the sending of a certain gcode list tanken as input through the 'send_gcode' service """
-                
+
                 self.req_printer_driver.gcode_strings = gcode
                 self.future_printer_driver = self.client_printer_driver.call_async(self.req_printer_driver)
                 while rclpy.ok():
@@ -140,7 +140,5 @@ if __name__ == '__main__':
                 printer_control_node.sendImageCaptureRequest('impressions/test/image_test_'+str(i))
         printer_control_node.sendGcodeSendingRequest(gcodeExample)
         profile = printer_control_node.sendProfileMeasureRequest()
-        print(type(profile))
-        print(len(profile))
-        print(profile)
+
         rclpy.shutdown()
