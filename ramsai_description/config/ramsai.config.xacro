@@ -30,11 +30,11 @@
         <origin xyz="0 0 0" rpy="0 0 0" />
     </xacro:iiwa14>
 
-    <xacro:iiwa_r2c_hardware 
+    <xacro:iiwa_r2c_hardware
         name="iiwaRobot" prefix="$(arg prefix)"
         robot_ip="$(arg robot_ip)" robot_port="$(arg robot_port)"
         command_interface="$(arg command_interface)"
-        initial_positions_file="$(arg initial_positions_file)" 
+        initial_positions_file="$(arg initial_positions_file)"
         use_sim="$(arg use_sim)" use_fake_hardware="$(arg use_fake_hardware)"
         />
 </robot>
