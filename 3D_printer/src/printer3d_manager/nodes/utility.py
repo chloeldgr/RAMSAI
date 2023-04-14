@@ -59,3 +59,41 @@ def getBordersGcode(sequence):
                         if x<xMin:
                                 xMin = x
         return (xMin,yMin,zMin,xMax,yMax,zMax)
+
+def getBordersSimpleGcode(simpleGcode):
+        zMax = 0
+        xMax = 0
+        yMax = 0
+        zMin = 2000
+        yMin = 2000
+        xMin = 2000
+
+        for line in simpleGcode:
+                if 'Z' in line and ';' not in line:
+                        z = line.split('Z')[1]
+                        z = z.split(' ')[0]
+                        z = z.split('\n')[0]
+                        z = float(z)
+                        if z>zMax:
+                                zMax = z
+                        if z<zMin:
+                                zMin = z
+                if 'Y' in line and ';' not in line:
+                        y = line.split('Y')[1]
+                        y = y.split(' ')[0]
+                        y = y.split('\n')[0]
+                        y = float(y)
+                        if y>yMax:
+                                yMax = y
+                        if y<yMin:
+                                yMin = y
+                if 'X' in line and ';' not in line:
+                        x = line.split('X')[1]
+                        x = x.split(' ')[0]
+                        x = x.split('\n')[0]
+                        x = float(x)
+                        if x>xMax:
+                                xMax = x
+                        if x<xMin:
+                                xMin = x
+        return (xMin,yMin,zMin,xMax,yMax,zMax)

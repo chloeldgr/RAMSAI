@@ -2,26 +2,25 @@
 import rclpy
 from rclpy.action import ActionClient
 from rclpy.node import Node
-
 from printer3d_msgs.srv import ProfileCommand
 from printer3d_msgs.srv import GcodeCommand
 from printer3d_msgs.srv import ImageCommand
 from printer3d_gocator_msgs.srv import GocatorPTCloud
-
 from utility import *
-
+import printer3d_constant
 from sensor_msgs.msg import PointCloud2 
 import point_cloud2 as pc2
 import os
+import numpy as np
+
 
 
 class PrinterControlNode(Node):
         def __init__(self, historyFilename):
                 super().__init__('printer_control') 
 
-
                 """Initialisation of the printing process workspace"""
-
+                self.historyFilename = historyFilename
                 try:
                         os.mkdir('/home/gulltor/Ramsai_Robotics/history/'+historyFilename)
                 except:
@@ -63,22 +62,92 @@ class PrinterControlNode(Node):
                         self.get_logger().info('profile measure service not available, waiting again...')
                 self.req_printer_driver = GcodeCommand.Request()
 
+                self.imageNumber = 0
+                self.scanNumber = 0
+
 
         def loadGcode(self,gcodeFilename):
-                fileFullGcode = open(file,'r')
-                rawGode = fichier.readlines()
+                fileFullGcode = open(gcodeFilename,'r')
+                rawGode = fileFullGcode.readlines()
                 fileFullGcode.close()
 
                 (self.xMin,self.yMin,self.zMin,self.xMax,self.yMax,self.zMax) = getBordersGcode(rawGode)
-                self.gcodeLayers = work_on_gcode_file(gco)
+                self.get_logger().info('xMin : '+str(self.xMin))
+                self.get_logger().info('xMax : '+str(self.xMax))
+                self.get_logger().info('yMin : '+str(self.yMin))
+                self.get_logger().info('yMax : '+str(self.yMax))
+                self.get_logger().info('zMin : '+str(self.zMin))
+                self.get_logger().info('zMax : '+str(self.zMax))
 
-        def scanCurrentLayer(self):
-                return 0
+                assert self.xMin >= printer3d_constant.XMIN
+                assert self.xMax <= printer3d_constant.XMAX
+
+                assert self.yMin >= printer3d_constant.YMIN
+                assert self.yMax <= printer3d_constant.YMAX
+
+                assert self.zMin >= printer3d_constant.ZMIN
+                assert self.zMax <= printer3d_constant.ZMAX
+                self.gcodeLayers = work_on_gcode_file(rawGode)
+
+                return self.gcodeLayers
+
+        def verifyGcodeBeforeSending(self,gcodeToVerify):
+
+                (self.xMin,self.yMin,self.zMin,self.xMax,self.yMax,self.zMax) = getBordersSimpleGcode(gcodeToVerify)
+                testXMin = self.xMin >= printer3d_constant.XMIN
+                testXMax = self.xMax <= printer3d_constant.XMAX
+
+                testYMin = self.yMin >= printer3d_constant.YMIN
+                testYMax = self.yMax <= printer3d_constant.YMAX
+
+                testZMin = self.zMin >= printer3d_constant.ZMIN
+                testZMax = self.zMax <= printer3d_constant.ZMAX
+
+                if testXMin == False or testXMax == False or testYMin == False or testYMax == False or testZMin == False or testZMax == False:
+                        return False  
+                else:
+                        return True
+
+        def scanCurrentLayer(self,printedLayer):
+                (layerXMin,layerYMin,layerZMin,layerXMax,layerYMax,layerZMax) = getBordersSimpleGcode(printedLayer)
+
+                gcodeScan = [[]]
+                margin = 10
+
+                Yinit = layerYMin - printer3d_constant.GAP
+                Yfinal = layerYMax - printer3d_constant.GAP
+                step = 0.3
+
+                gcodeScan[0].append('G1 Z'+str(layerZMax+1)+'\n')
+                gcodeScan[0].append('G28 X0 Y0\n')
+                gcodeScan[0].append('G1 Y'+str(Yinit-(margin/2))+' F1200\n')
+                length = int((Yfinal-Yinit+margin)/step)
+
+                self.get_logger().info('scanning begin :')
+                self.get_logger().info('Yinit :' + str(Yinit))
+                self.get_logger().info('Yfinal :'+ str(Yfinal))
+                self.get_logger().info('length :'+ str(length))
+
+                for i in range(1,length):
+                        gcodeScan.append([])
+                        gcodeScan[-1].append('G1 Y'+str(Yinit-(margin/2)+(i*step))+'\n')
+                surface = []
+                for mouvements in gcodeScan:
+                        self.sendGcodeSendingRequest(mouvements)
+                        profileLine = self.sendProfileMeasureRequest()
+                        surface.append(profileLine)
+                np.save('/home/gulltor/Ramsai_Robotics/history/'+self.historyFilename+'/scan/layer_scan_'+str(self.scanNumber)+'.npy',np.array(surface))
+                self.scanNumber += 1
+                return surface
 
         def printCurrentLayer(self):
                 return 0
 
         def takeCurrentLayerPhoto(self):
+                gcodeMoveToPos = ['G28 X0 Y0\n','G1 Y'+str(printer3d_constant.YPOSPHOTO)+'\n']
+                self.sendGcodeSendingRequest(gcodeMoveToPos)
+                self.sendImageCaptureRequest('/home/gulltor/Ramsai_Robotics/history/'+self.historyFilename+'/photos/layer_photo_'+str(self.imageNumber)+'.jpg')
+                self.imageNumber += 1
                 return 0
 
         def sendImageCaptureRequest(self,filename):
@@ -123,6 +192,8 @@ class PrinterControlNode(Node):
 
                 """ Request the sending of a certain gcode list tanken as input through the 'send_gcode' service """
 
+                assert self.verifyGcodeBeforeSending(gcode) == True
+
                 self.req_printer_driver.gcode_strings = gcode
                 self.future_printer_driver = self.client_printer_driver.call_async(self.req_printer_driver)
                 while rclpy.ok():
@@ -132,13 +203,14 @@ class PrinterControlNode(Node):
                                 break
 
 if __name__ == '__main__':
-        gcodeExample = ['G28\n','G1 F3000 X10 Y10 Z10\n','G28\n']
-
+        gcodeExample = ['G1 F3000 X10 Y100 Z1\n','G1 F3000 X120 Y120 Z1\n','G1 F3000 X120 Y100 Z1\n','G1 F3000 X10 Y100 Z1\n']
+        carriageReturn = ['G28\n']
         rclpy.init()
-        printer_control_node = PrinterControlNode('impression_test')
-        for i in range(0,10):
-                printer_control_node.sendImageCaptureRequest('impressions/test/image_test_'+str(i))
-        printer_control_node.sendGcodeSendingRequest(gcodeExample)
-        profile = printer_control_node.sendProfileMeasureRequest()
-
+        printer_control_node = PrinterControlNode('test_impression_scan')
+        printer_control_node.sendGcodeSendingRequest(carriageReturn)
+        gcode = printer_control_node.loadGcode('/home/gulltor/Ramsai_Robotics/Gcodes/test_impression.gcode')
+        for i in range(0,len(gcode)):
+                printer_control_node.sendGcodeSendingRequest(gcode[i])
+                printer_control_node.takeCurrentLayerPhoto()
+                printer_control_node.scanCurrentLayer(gcodeExample)
         rclpy.shutdown()

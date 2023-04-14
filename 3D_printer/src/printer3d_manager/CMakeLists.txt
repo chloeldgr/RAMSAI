@@ -39,6 +39,7 @@ endif()
 install(
   PROGRAMS
     nodes/printer_control_node.py
+    nodes/printer3d_constant.py
     nodes/utility.py
     nodes/point_cloud2.py
     DESTINATION lib/${PROJECT_NAME}
