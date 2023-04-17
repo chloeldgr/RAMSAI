@@ -21,7 +21,7 @@ find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 
 # Install the python module for this package
-ament_python_install_package(nodes/)
+# ament_python_install_package(nodes/)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
