@@ -32,7 +32,7 @@ LINK_DIRECTORIES(${PCL_LIBRARY_DIRS})
 ADD_DEFINITIONS(${PCL_DEFINITIONS})
 
 # Set GO_SDK include paths (That could be part of a FindGocator.cmake)
-SET(GO_SDK_4 ${CMAKE_CURRENT_SOURCE_DIR}/external/GO_SDK) 
+SET(GO_SDK_4 ${CMAKE_CURRENT_SOURCE_DIR}/external/GO_SDK)
 FIND_PATH(
     GOCATOR_INCLUDES
     NAMES GoSdk/GoSdk.h
@@ -47,18 +47,18 @@ INCLUDE_DIRECTORIES(${GOCATOR_INCLUDES} ${KAPI_INCLUDES})
 FIND_LIBRARY(
     GOCATOR_LIBRARIES
     NAMES GoSdk
-    PATHS ${GO_SDK_4}/lib/linux_x64d) 
+    PATHS ${GO_SDK_4}/lib/linux_x64d)
 FIND_LIBRARY(
     KAPI_LIBRARIES
     NAMES kApi
-    PATHS ${GO_SDK_4}/lib/linux_x64d) 
+    PATHS ${GO_SDK_4}/lib/linux_x64d)
 
-# Set source files 
-SET(LIB_SRCS 
+# Set source files
+SET(LIB_SRCS
   src/driver/gocatorSensor.cpp)
 
-# Set header files 
-SET(LIB_HDRS 
+# Set header files
+SET(LIB_HDRS
   src/driver/gocatorSensor.h)
 
 INCLUDE_DIRECTORIES(${LIB_HDRS})

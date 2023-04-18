@@ -38,7 +38,7 @@ class GcodeMonitorNode(Node):
                 super().__init__('printer_gcode_monitor')
 
                 self.serialPort = openSerialPort('/dev/ttyACM0', 250000)
-                self.serialPort.write("\n\n".encode('ascii'))
+                self.serialPort.write(b"\n\n")
                 time.sleep(2)
 
                 self.gcodeService = self.create_service(GcodeCommand, 'send_gcode', self.execute_gcode_sending)
@@ -52,7 +52,7 @@ class GcodeMonitorNode(Node):
 
                 #self.get_logger().info('Gcode Received with a length of : '+str(len(gcode)))
 
-                feedback = 0.0                
+                feedback = 0.0
 
                 self.serialPort.flushInput()
                 self.i = 0
@@ -85,7 +85,7 @@ class GcodeMonitorNode(Node):
                                         grbl_out = grbl_out.strip().decode('ascii')
 
 
-                self.serialPort.write(("M400\n").encode('ascii'))
+                self.serialPort.write(b"M400\n")
                 grbl_out = self.serialPort.readline() # wait for response from printer
                 grbl_out = grbl_out.strip().decode('ascii')
                 while  'ok' not in grbl_out:
@@ -93,7 +93,7 @@ class GcodeMonitorNode(Node):
                         grbl_out = grbl_out.strip().decode('ascii')
 
 
-                self.serialPort.write(("M400\n").encode('ascii'))
+                self.serialPort.write(b"M400\n")
                 grbl_out = self.serialPort.readline() # wait for response from printer
                 grbl_out = grbl_out.strip().decode('ascii')
                 while  'ok' not in grbl_out:

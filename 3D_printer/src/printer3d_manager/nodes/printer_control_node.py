@@ -8,7 +8,7 @@ from printer3d_msgs.srv import ImageCommand
 from printer3d_gocator_msgs.srv import GocatorPTCloud
 from utility import *
 import printer3d_constant
-from sensor_msgs.msg import PointCloud2 
+from sensor_msgs.msg import PointCloud2
 import point_cloud2 as pc2
 import os
 import numpy as np
@@ -17,7 +17,7 @@ import numpy as np
 
 class PrinterControlNode(Node):
         def __init__(self, historyFilename):
-                super().__init__('printer_control') 
+                super().__init__('printer_control')
 
                 """Initialisation of the printing process workspace"""
                 self.historyFilename = historyFilename
@@ -67,7 +67,7 @@ class PrinterControlNode(Node):
 
 
         def loadGcode(self,gcodeFilename):
-                fileFullGcode = open(gcodeFilename,'r')
+                fileFullGcode = open(gcodeFilename)
                 rawGode = fileFullGcode.readlines()
                 fileFullGcode.close()
 
@@ -104,7 +104,7 @@ class PrinterControlNode(Node):
                 testZMax = self.zMax <= printer3d_constant.ZMAX
 
                 if testXMin == False or testXMax == False or testYMin == False or testYMax == False or testZMin == False or testZMax == False:
-                        return False  
+                        return False
                 else:
                         return True
 
@@ -132,8 +132,8 @@ class PrinterControlNode(Node):
                         gcodeScan.append([])
                         gcodeScan[-1].append('G1 Y'+str(Yinit-(margin/2)+(i*step))+'\n')
                 surface = []
-                for mouvements in gcodeScan:
-                        self.sendGcodeSendingRequest(mouvements)
+                for movements in gcodeScan:
+                        self.sendGcodeSendingRequest(movements)
                         profileLine = self.sendProfileMeasureRequest()
                         surface.append(profileLine)
                 np.save('/home/gulltor/Ramsai_Robotics/history/'+self.historyFilename+'/scan/layer_scan_'+str(self.scanNumber)+'.npy',np.array(surface))
@@ -174,11 +174,11 @@ class PrinterControlNode(Node):
                                 try:
                                         self.response = self.future_profile_measure.result()
                                 except Exception as e:
-                                        self.get_logger().info('Service call failed %r' % (e,))
+                                        self.get_logger().info('Service call failed {!r}'.format(e))
                                 else:
                                         pcloud = self.response.pcloud
                                         self.flag_datas_used = True
-                                        
+
                                         gen = pc2.read_points(pcloud, skip_nans=True)
                                         profile = list(gen)
 
@@ -186,7 +186,7 @@ class PrinterControlNode(Node):
                                                 profile_line.append([[points[0],0,points[2]]])
                                 break
                 self.get_logger().info('scan finished')
-                return profile_line  
+                return profile_line
 
         def sendGcodeSendingRequest(self,gcode):
 

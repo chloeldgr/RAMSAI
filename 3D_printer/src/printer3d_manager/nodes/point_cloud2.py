@@ -118,9 +118,9 @@ def read_points(cloud, field_names=None, skip_nans=False, uvs=[]):
 def read_points_list(cloud, field_names=None, skip_nans=False, uvs=[]):
     """
     Read points from a L{sensor_msgs.PointCloud2} message.
-    
-    This function returns a list of namedtuples. It operates on top of the read_points method. For more efficient access use read_points directly. 
- 
+
+    This function returns a list of namedtuples. It operates on top of the read_points method. For more efficient access use read_points directly.
+
     @param cloud: The point cloud to read from.
     @type  cloud: L{sensor_msgs.PointCloud2}
     @param field_names: The names of fields to read. If None, read all fields. [default: None]
@@ -151,7 +151,7 @@ def create_cloud(header, fields, points):
     @type  fields: iterable of L{sensor_msgs.msg.PointField}
     @param points: The point cloud points.
     @type  points: list of iterables, i.e. one iterable for each point, with the
-                   elements of each iterable being the values of the fields for 
+                   elements of each iterable being the values of the fields for
                    that point (in the same order as the fields parameter)
     @return: The point cloud.
     @rtype:  L{sensor_msgs.msg.PointCloud2}
@@ -182,7 +182,7 @@ def create_cloud_xyz32(header, points):
 
     @param header: The point cloud header.
     @type  header: L{std_msgs.msg.Header}
-    @param points: The point cloud points. 
+    @param points: The point cloud points.
     @type  points: iterable
     @return: The point cloud.
     @rtype:  L{sensor_msgs.msg.PointCloud2}

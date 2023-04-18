@@ -7,7 +7,7 @@ def work_on_gcode_file(sequence):
         layers = [[]]
 
         for line in sequence:
-                
+
                 if (delimiter not in line) and (final_delimiter not in line):
                         if line[0]!=';':
                                 layers[-1].append(line)

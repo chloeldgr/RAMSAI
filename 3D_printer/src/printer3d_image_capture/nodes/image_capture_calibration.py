@@ -6,7 +6,7 @@ from rclpy.node import Node
 from printer3d_msgs.srv import ProfileCommand
 from printer3d_msgs.srv import GcodeCommand
 from printer3d_msgs.srv import ImageCommand
-import cv2 
+import cv2
 
 YPOSPHOTO = 200
 
@@ -22,7 +22,7 @@ class ImageCaptureNode(Node):
 
         def __del__(self):
                 self.webcam.release()
-                
+
         def showVideo(self):
                 self.webcam = cv2.VideoCapture("/dev/video"+str(self.cameraNumber)) # Be carefull with the number after video
                 while(True):
