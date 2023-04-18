@@ -1,3 +1,17 @@
+// Copyright 2023 ICube Laboratory, University of Strasbourg
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 #include "gocatorSensor.h"
 
 GocatorSensor::Device::Device(const std::string & _ip_address)
@@ -6,7 +20,7 @@ GocatorSensor::Device::Device(const std::string & _ip_address)
   kIpAddress ipAddress;
   kChar model_name[50];
 
-  //init all GO API objects
+  // init all GO API objects
   go_api_ = kNULL;
   go_system_ = kNULL;
   go_sensor_ = kNULL;
@@ -36,7 +50,7 @@ GocatorSensor::Device::Device(const std::string & _ip_address)
     return;
   }
 
-  //Success case. Set status and device fixed params (ip, model name and serial number ).
+  // Success case. Set status and device fixed params (ip, model name and serial number ).
   status_ = DEVICE_FOUND;
   device_params_.ip_address_ = _ip_address;
 
@@ -60,23 +74,23 @@ GocatorSensor::Device::Device(const std::string & _ip_address)
     return;
   }
 
-  //Obtain camera model
+  // Obtain camera model
   if ((status = GoSensor_Model(go_sensor_, model_name, 50)) != kOK) {
     std::cout << "Device(). Error: GoSensor_Model: " << status << std::endl;
     return;
   }
   device_params_.model_name_ = model_name;
 
-  //Obtain camera Serial number
+  // Obtain camera Serial number
   device_params_.sn_ = (unsigned int)GoSensor_Id(go_sensor_);
 
-  //Obtain exposure
+  // Obtain exposure
   capture_params_.exposure_time_ = GoSetup_Exposure(go_setup_, GO_ROLE_MAIN);
 
-  //Obtain spacing interval
+  // Obtain spacing interval
   capture_params_.spacing_interval_ = GoSetup_SpacingInterval(go_setup_, GO_ROLE_MAIN);
 
-  //print info
+  // print info
   std::cout << "Found Sensor: " << std::endl;
   device_params_.print();
 }
@@ -89,7 +103,7 @@ GocatorSensor::Device::~Device()
   GoDestroy(go_system_);
   GoDestroy(go_api_);
 
-  //bye bye message
+  // bye bye message
   std::cout << "~Device(). Gocator Sensor Stopped and Device Object Destroyed." << std::endl;
 }
 
@@ -97,14 +111,14 @@ int GocatorSensor::Device::configure(const CaptureParams & _configs)
 {
   kStatus status;
 
-  //set exposure
+  // set exposure
   if ((status = GoSetup_SetExposure(go_setup_, GO_ROLE_MAIN, _configs.exposure_time_)) != kOK) {
     std::cout << "configure(): Error setting Exposure Time to " << _configs.exposure_time_ <<
       std::endl;
     return -1;
   }
 
-  //set spacing interval
+  // set spacing interval
   if ((status =
     GoSetup_SetSpacingInterval(go_setup_, GO_ROLE_MAIN, _configs.spacing_interval_)) != kOK)
   {
@@ -113,15 +127,15 @@ int GocatorSensor::Device::configure(const CaptureParams & _configs)
     return -1;
   }
 
-  //set this->capture_params_ with true values from camera
+  // set this->capture_params_ with true values from camera
   capture_params_.exposure_time_ = GoSetup_Exposure(go_setup_, GO_ROLE_MAIN);
   capture_params_.spacing_interval_ = GoSetup_SpacingInterval(go_setup_, GO_ROLE_MAIN);
 
-  //print
+  // print
   std::cout << "Configuration Settings: " << std::endl;
   capture_params_.print();
 
-  //return
+  // return
   return 1;
 }
 
@@ -135,13 +149,13 @@ int GocatorSensor::Device::start()
     return -1;
   }
 
-  //message to std out
-  //std::cout << "Gocator running ... " << std::endl;
+  // message to std out
+  // std::cout << "Gocator running ... " << std::endl;
 
-  //set this->status_
+  // set this->status_
   this->status_ = DEVICE_RUNNING;
 
-  //return success
+  // return success
   return 1;
 }
 
@@ -155,24 +169,22 @@ int GocatorSensor::Device::stop()
     return -1;
   }
 
-  //message to std out
-  //std::cout << "... Gocator stopped" << std::endl << std::endl;
+  // message to std out
+  // std::cout << "... Gocator stopped" << std::endl << std::endl;
 
-  //set this->status_
+  // set this->status_
   this->status_ = DEVICE_CONNECT;
 
-  //return success
+  // return success
   return 1;
 }
 
 int GocatorSensor::Device::getCurrentSnapshot(pcl::PointCloud<pcl::PointXYZ> & _p_cloud)
 {
-
 }
 
 int GocatorSensor::Device::getSingleSnapshot(pcl::PointCloud<pcl::PointXYZ> & _p_cloud)
 {
-
 }
 
 int GocatorSensor::Device::getProfile(pcl::PointCloud<pcl::PointXYZ> & _p_cloud)
@@ -190,7 +202,7 @@ int GocatorSensor::Device::getProfile(pcl::PointCloud<pcl::PointXYZ> & _p_cloud)
     // loop through all items in result message
     for (i = 0; i < GoDataSet_Count(dataset); ++i) {
       dataObj = GoDataSet_At(dataset, i);
-      //Retrieve GoStamp message
+      // Retrieve GoStamp message
       switch (GoDataMsg_Type(dataObj)) {
         case GO_DATA_MESSAGE_TYPE_STAMP:
           {
@@ -232,7 +244,6 @@ int GocatorSensor::Device::getProfile(pcl::PointCloud<pcl::PointXYZ> & _p_cloud)
               for (arrayIndex = 0; arrayIndex < GoResampledProfileMsg_Width(profileMsg);
                 ++arrayIndex)
               {
-
                 if (data[arrayIndex] != INVALID_RANGE_16BIT) {
                   // profileBuffer[arrayIndex].x = XOffset + XResolution * arrayIndex;
                   // profileBuffer[arrayIndex].z = ZOffset + ZResolution * data[arrayIndex];
@@ -248,10 +259,7 @@ int GocatorSensor::Device::getProfile(pcl::PointCloud<pcl::PointXYZ> & _p_cloud)
                     arrayIndex;
                   _p_cloud.points.at(k * _p_cloud.width + arrayIndex).z = INVALID_RANGE_DOUBLE;
                 }
-
-
               }
-
               printf(
                 "  Profile Valid Point %d out of max %d\n", validPointCount,
                 profilePointCount);
@@ -278,7 +286,7 @@ int GocatorSensor::Device::getProfile(pcl::PointCloud<pcl::PointXYZ> & _p_cloud)
 
               // profileBuffer.resize(GoResampledProfileMsg_Width(profileMsg));
 
-              //translate 16-bit range data to engineering units and copy profiles to memory array
+              // translate 16-bit range data to engineering units and copy profiles to memory array
               for (arrayIndex = 0; arrayIndex < GoProfileMsg_Width(profileMsg); ++arrayIndex) {
                 if (data[arrayIndex].x != INVALID_RANGE_16BIT) {
                   // profileBuffer[arrayIndex].x = XOffset + XResolution * data[arrayIndex].x;
@@ -332,13 +340,13 @@ int GocatorSensor::Device::getProfile(pcl::PointCloud<pcl::PointXYZ> & _p_cloud)
 
 void GocatorSensor::Device::getDeviceHealth(std::string & _health_str) const
 {
-  //local variables
+  // local variables
   GoDataSet health_data = kNULL;
   GoHealthMsg health_msg = kNULL;
   GoIndicator * health_indicator = kNULL;
   std::ostringstream sstr;
 
-  //get health from device
+  // get health from device
   if ( (GoSystem_ReceiveHealth(go_system_, &health_data, RECEIVE_TIMEOUT)) == kOK) {
     for (unsigned int ii = 0; ii < GoDataSet_Count(health_data); ii++) {
       health_msg = GoDataSet_At(health_data, ii);
@@ -360,31 +368,31 @@ void GocatorSensor::Device::getTemperature(
   double & _internal_temp, double & _projector_temp,
   double & _laser_temp) const
 {
-  //local variables
+  // local variables
   GoDataSet health_data = kNULL;
   GoHealthMsg health_msg = kNULL;
   GoIndicator * health_indicator = kNULL;
-  //k32u instance;
+  // k32u instance;
 
-  //get health dataset from device
+  // get health dataset from device
   if ( (GoSystem_ReceiveHealth(go_system_, &health_data, RECEIVE_TIMEOUT)) == kOK) {
     for (unsigned int ii = 0; ii < GoDataSet_Count(health_data); ii++) {
-      //get the health message
+      // get the health message
       health_msg = GoDataSet_At(health_data, ii);
 
-      //find in the message the internal temperature indicator, and set the value
+      // find in the message the internal temperature indicator, and set the value
       health_indicator = GoHealthMsg_Find(health_msg, GO_HEALTH_TEMPERATURE, 0);
       if (health_indicator != kNULL) {_internal_temp = health_indicator->value;} else {
         _internal_temp = -100.;
       }
 
-      //find in the message the projector temperature indicator, and set the value
+      // find in the message the projector temperature indicator, and set the value
       health_indicator = GoHealthMsg_Find(health_msg, GO_HEALTH_PROJECTOR_TEMPERATURE, 0);
       if (health_indicator != kNULL) {_projector_temp = health_indicator->value;} else {
         _projector_temp = -100.;
       }
 
-      //find in the message the projector temperature indicator, and set the value
+      // find in the message the projector temperature indicator, and set the value
       health_indicator = GoHealthMsg_Find(health_msg, GO_HEALTH_LASER_TEMPERATURE, 0);
       if (health_indicator != kNULL) {_laser_temp = health_indicator->value;} else {
         _laser_temp = -100.;
@@ -392,17 +400,14 @@ void GocatorSensor::Device::getTemperature(
     }
     GoDestroy(health_msg);
   }
-
 }
 
 int GocatorSensor::Device::close()
 {
-
 }
 
 void GocatorSensor::Device::printDeviceData() const
 {
-
 }
 
 void GocatorSensor::Device::sendTrigger() const

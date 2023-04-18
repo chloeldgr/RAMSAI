@@ -26,42 +26,42 @@ find_package(printer3d_gocator_msgs REQUIRED)
 find_package(pcl_conversions REQUIRED)
 
 # Find point cloud Library
-FIND_PACKAGE(PCL REQUIRED COMPONENTS)
-INCLUDE_DIRECTORIES(${PCL_INCLUDE_DIRS})
-LINK_DIRECTORIES(${PCL_LIBRARY_DIRS})
-ADD_DEFINITIONS(${PCL_DEFINITIONS})
+find_package(PCL REQUIRED COMPONENTS)
+include_directories(${PCL_INCLUDE_DIRS})
+link_directories(${PCL_LIBRARY_DIRS})
+add_definitions(${PCL_DEFINITIONS})
 
 # Set GO_SDK include paths (That could be part of a FindGocator.cmake)
-SET(GO_SDK_4 ${CMAKE_CURRENT_SOURCE_DIR}/external/GO_SDK)
-FIND_PATH(
+set(GO_SDK_4 ${CMAKE_CURRENT_SOURCE_DIR}/external/GO_SDK)
+find_path(
     GOCATOR_INCLUDES
     NAMES GoSdk/GoSdk.h
     PATHS ${GO_SDK_4}/Gocator/GoSdk)
-FIND_PATH(
+find_path(
     KAPI_INCLUDES
     NAMES kApi/kApi.h
     PATHS ${GO_SDK_4}/Platform/kApi)
-INCLUDE_DIRECTORIES(${GOCATOR_INCLUDES} ${KAPI_INCLUDES})
+include_directories(${GOCATOR_INCLUDES} ${KAPI_INCLUDES})
 
 # Set GO_SDK libs (That could be part of a FindGocator.cmake)
-FIND_LIBRARY(
+find_library(
     GOCATOR_LIBRARIES
     NAMES GoSdk
     PATHS ${GO_SDK_4}/lib/linux_x64d)
-FIND_LIBRARY(
+find_library(
     KAPI_LIBRARIES
     NAMES kApi
     PATHS ${GO_SDK_4}/lib/linux_x64d)
 
 # Set source files
-SET(LIB_SRCS
+set(LIB_SRCS
   src/driver/gocatorSensor.cpp)
 
 # Set header files
-SET(LIB_HDRS
+set(LIB_HDRS
   src/driver/gocatorSensor.h)
 
-INCLUDE_DIRECTORIES(${LIB_HDRS})
+include_directories(${LIB_HDRS})
 
 # Install the python module for this package
 # ament_python_install_package(script/)
@@ -74,7 +74,7 @@ INCLUDE_DIRECTORIES(${LIB_HDRS})
 ################################################################################
 
 add_executable( gocator_sensor_node src/nodes/gocatorSensorNode.cpp ${LIB_HDRS} ${LIB_SRCS} )
-target_link_libraries (gocator_sensor_node ${GOCATOR_LIBRARIES} ${KAPI_LIBRARIES} ${Boost_SYSTEM_LIBRARY})
+target_link_libraries(gocator_sensor_node ${GOCATOR_LIBRARIES} ${KAPI_LIBRARIES} ${Boost_SYSTEM_LIBRARY})
 
 ament_target_dependencies(gocator_sensor_node rclcpp sensor_msgs std_msgs printer3d_gocator_msgs pcl_conversions)
 

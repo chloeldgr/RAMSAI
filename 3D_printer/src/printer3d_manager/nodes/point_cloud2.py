@@ -1,36 +1,17 @@
 #!/usr/bin/env python3
-
-# Software License Agreement (BSD License)
+# Copyright 2023 ICube Laboratory, University of Strasbourg
 #
-# Copyright (c) 2008, Willow Garage, Inc.
-# All rights reserved.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions
-# are met:
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-# * Redistributions of source code must retain the above copyright
-# notice, this list of conditions and the following disclaimer.
-# * Redistributions in binary form must reproduce the above
-# copyright notice, this list of conditions and the following
-# disclaimer in the documentation and/or other materials provided
-# with the distribution.
-# * Neither the name of Willow Garage, Inc. nor the names of its
-# contributors may be used to endorse or promote products derived
-# from this software without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
-# FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
-# COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
-# INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
-# BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
-# ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-# POSSIBILITY OF SUCH DAMAGE.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 """
 Serialization of sensor_msgs.PointCloud2 messages.
@@ -49,35 +30,22 @@ import struct
 from sensor_msgs.msg import PointCloud2, PointField
 
 _DATATYPES = {}
-_DATATYPES[PointField.INT8]    = ('b', 1)
-_DATATYPES[PointField.UINT8]   = ('B', 1)
-_DATATYPES[PointField.INT16]   = ('h', 2)
-_DATATYPES[PointField.UINT16]  = ('H', 2)
-_DATATYPES[PointField.INT32]   = ('i', 4)
-_DATATYPES[PointField.UINT32]  = ('I', 4)
+_DATATYPES[PointField.INT8] = ('b', 1)
+_DATATYPES[PointField.UINT8] = ('B', 1)
+_DATATYPES[PointField.INT16] = ('h', 2)
+_DATATYPES[PointField.UINT16] = ('H', 2)
+_DATATYPES[PointField.INT32] = ('i', 4)
+_DATATYPES[PointField.UINT32] = ('I', 4)
 _DATATYPES[PointField.FLOAT32] = ('f', 4)
 _DATATYPES[PointField.FLOAT64] = ('d', 8)
 
-def read_points(cloud, field_names=None, skip_nans=False, uvs=[]):
-    """
-    Read points from a L{sensor_msgs.PointCloud2} message.
 
-    @param cloud: The point cloud to read from.
-    @type  cloud: L{sensor_msgs.PointCloud2}
-    @param field_names: The names of fields to read. If None, read all fields. [default: None]
-    @type  field_names: iterable
-    @param skip_nans: If True, then don't return any point with a NaN value.
-    @type  skip_nans: bool [default: False]
-    @param uvs: If specified, then only return the points at the given coordinates. [default: empty list]
-    @type  uvs: iterable
-    @return: Generator which yields a list of values for each point.
-    @rtype:  generator
-    """
+def read_points(cloud, field_names=None, skip_nans=False, uvs=[]):
     assert isinstance(cloud, PointCloud2), 'cloud is not a sensor_msgs.msg.PointCloud2'
     fmt = _get_struct_fmt(cloud.is_bigendian, cloud.fields, field_names)
     width, height, point_step, row_step, data, isnan = cloud.width, cloud.height, \
-                                                       cloud.point_step, cloud.row_step, \
-                                                       cloud.data, math.isnan
+        cloud.point_step, cloud.row_step, \
+        cloud.data, math.isnan
     unpack_from = struct.Struct(fmt).unpack_from
 
     if skip_nans:
@@ -115,23 +83,8 @@ def read_points(cloud, field_names=None, skip_nans=False, uvs=[]):
                     yield unpack_from(data, offset)
                     offset += point_step
 
+
 def read_points_list(cloud, field_names=None, skip_nans=False, uvs=[]):
-    """
-    Read points from a L{sensor_msgs.PointCloud2} message.
-
-    This function returns a list of namedtuples. It operates on top of the read_points method. For more efficient access use read_points directly.
-
-    @param cloud: The point cloud to read from.
-    @type  cloud: L{sensor_msgs.PointCloud2}
-    @param field_names: The names of fields to read. If None, read all fields. [default: None]
-    @type  field_names: iterable
-    @param skip_nans: If True, then don't return any point with a NaN value.
-    @type  skip_nans: bool [default: False]
-    @param uvs: If specified, then only return the points at the given coordinates. [default: empty list]
-    @type  uvs: iterable
-    @return: List of namedtuples containing the values for each point
-    @rtype: list
-    """
     assert isinstance(cloud, PointCloud2), 'cloud is not a sensor_msgs.msg.PointCloud2'
 
     if field_names is None:
@@ -139,23 +92,10 @@ def read_points_list(cloud, field_names=None, skip_nans=False, uvs=[]):
 
     Point = namedtuple("Point", field_names)
 
-    return [Point._make(l) for l in read_points(cloud, field_names, skip_nans, uvs)]
+    return [Point._make(lines) for lines in read_points(cloud, field_names, skip_nans, uvs)]
+
 
 def create_cloud(header, fields, points):
-    """
-    Create a L{sensor_msgs.msg.PointCloud2} message.
-
-    @param header: The point cloud header.
-    @type  header: L{std_msgs.msg.Header}
-    @param fields: The point cloud fields.
-    @type  fields: iterable of L{sensor_msgs.msg.PointField}
-    @param points: The point cloud points.
-    @type  points: list of iterables, i.e. one iterable for each point, with the
-                   elements of each iterable being the values of the fields for
-                   that point (in the same order as the fields parameter)
-    @return: The point cloud.
-    @rtype:  L{sensor_msgs.msg.PointCloud2}
-    """
     cloud_struct = struct.Struct(_get_struct_fmt(False, fields))
 
     buff = ctypes.create_string_buffer(cloud_struct.size * len(points))
@@ -176,22 +116,13 @@ def create_cloud(header, fields, points):
                        row_step=cloud_struct.size * len(points),
                        data=buff.raw)
 
+
 def create_cloud_xyz32(header, points):
-    """
-    Create a L{sensor_msgs.msg.PointCloud2} message with 3 float32 fields (x, y, z).
-
-    @param header: The point cloud header.
-    @type  header: L{std_msgs.msg.Header}
-    @param points: The point cloud points.
-    @type  points: iterable
-    @return: The point cloud.
-    @rtype:  L{sensor_msgs.msg.PointCloud2}
-    """
-
     fields = [PointField(name='x', offset=0, datatype=PointField.FLOAT32, count=1),
               PointField(name='y', offset=4, datatype=PointField.FLOAT32, count=1),
               PointField(name='z', offset=8, datatype=PointField.FLOAT32, count=1)]
     return create_cloud(header, fields, points)
+
 
 def _get_struct_fmt(is_bigendian, fields, field_names=None):
     fmt = '>' if is_bigendian else '<'
@@ -204,7 +135,7 @@ def _get_struct_fmt(is_bigendian, fields, field_names=None):
             print('Skipping unknown PointField datatype [%d]' % field.datatype, file=sys.stderr)
         else:
             datatype_fmt, datatype_length = _DATATYPES[field.datatype]
-            fmt    += field.count * datatype_fmt
+            fmt += field.count * datatype_fmt
             offset += field.count * datatype_length
 
     return fmt

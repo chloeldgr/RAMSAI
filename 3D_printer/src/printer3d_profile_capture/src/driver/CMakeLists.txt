@@ -1,13 +1,13 @@
 # Pre-requisites about cmake itself
-CMAKE_MINIMUM_REQUIRED(VERSION 3.5)
+cmake_minimum_required(VERSION 3.5)
 
 # Project name and the type of project
-PROJECT(gocatorSensor)
+project(gocatorSensor)
 
 # DEBUG/RELEASE
-IF (NOT CMAKE_BUILD_TYPE)
-  SET(CMAKE_BUILD_TYPE "RELEASE")
-ENDIF (NOT CMAKE_BUILD_TYPE)
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE "RELEASE")
+endif()
 
 # Default to C99
 if(NOT CMAKE_C_STANDARD)
@@ -24,41 +24,39 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 # Find point cloud Library
-FIND_PACKAGE(PCL REQUIRED COMPONENTS)
-INCLUDE_DIRECTORIES(${PCL_INCLUDE_DIRS})
-LINK_DIRECTORIES(${PCL_LIBRARY_DIRS})
-ADD_DEFINITIONS(${PCL_DEFINITIONS})
+find_package(PCL REQUIRED COMPONENTS)
+include_directories(${PCL_INCLUDE_DIRS})
+link_directories(${PCL_LIBRARY_DIRS})
+add_definitions(${PCL_DEFINITIONS})
 
 # Set GO_SDK include paths (That could be part of a FindGocator.cmake)
-SET(GO_SDK_4 ${CMAKE_CURRENT_SOURCE_DIR}/../../external/GO_SDK)
-FIND_PATH(
+set(GO_SDK_4 ${CMAKE_CURRENT_SOURCE_DIR}/../../external/GO_SDK)
+find_path(
     GOCATOR_INCLUDES
     NAMES GoSdk/GoSdk.h
     PATHS ${GO_SDK_4}/Gocator/GoSdk)
-FIND_PATH(
+find_path(
     KAPI_INCLUDES
     NAMES kApi/kApi.h
     PATHS ${GO_SDK_4}/Platform/kApi)
-INCLUDE_DIRECTORIES(${GOCATOR_INCLUDES} ${KAPI_INCLUDES})
+include_directories(${GOCATOR_INCLUDES} ${KAPI_INCLUDES})
 
 # Set GO_SDK libs (That could be part of a FindGocator.cmake)
-FIND_LIBRARY(
+find_library(
     GOCATOR_LIBRARIES
     NAMES GoSdk
     PATHS ${GO_SDK_4}/lib/linux_x64d/)
-FIND_LIBRARY(
+find_library(
     KAPI_LIBRARIES
     NAMES kApi
     PATHS ${GO_SDK_4}/lib/linux_x64d/)
 
 # Set source files
-SET(SRCS
-	gocatorSensor.cpp)
+set(SRCS gocatorSensor.cpp)
 
 # Set header files
-SET(HDRS
-	gocatorSensor.h)
+set(HDRS gocatorSensor.h)
 
 #Build library
-ADD_LIBRARY(${PROJECT_NAME} SHARED ${SRCS})
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} ${GOCATOR_LIBRARIES} ${KAPI_LIBRARIES} ${PCL_COMMON_LIBRARIES} ${PCL_IO_LIBRARIES})
+add_library(${PROJECT_NAME} SHARED ${SRCS})
+target_link_libraries(${PROJECT_NAME} ${GOCATOR_LIBRARIES} ${KAPI_LIBRARIES} ${PCL_COMMON_LIBRARIES} ${PCL_IO_LIBRARIES})
