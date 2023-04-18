@@ -38,6 +38,7 @@ endif()
 
 install(
   PROGRAMS
+    nodes/image_capture_calibration.py
     nodes/image_capture_node.py
     DESTINATION lib/${PROJECT_NAME}
 )

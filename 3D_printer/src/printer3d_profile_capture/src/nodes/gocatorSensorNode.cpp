@@ -19,7 +19,7 @@ class GocatorSensorNode : public rclcpp::Node
     : Node("gocatorSensorNode")
     {
         gsensor_ = new GocatorSensor::Device(SENSOR_IP); 
-        capture_params_.exposure_time_ = 40000;
+        capture_params_.exposure_time_ = 110;
         capture_params_.spacing_interval_ = 0.1;
         gsensor_->configure(capture_params_);
 

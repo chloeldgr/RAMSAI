@@ -112,7 +112,7 @@ class PrinterControlNode(Node):
                 (layerXMin,layerYMin,layerZMin,layerXMax,layerYMax,layerZMax) = getBordersSimpleGcode(printedLayer)
 
                 gcodeScan = [[]]
-                margin = 25
+                margin = 20
 
                 Yinit = layerYMin - printer3d_constant.GAP
                 Yfinal = layerYMax - printer3d_constant.GAP
@@ -205,11 +205,11 @@ class PrinterControlNode(Node):
 if __name__ == '__main__':
         carriageReturn = ['G28\n']
         rclpy.init()
-        printer_control_node = PrinterControlNode('impression_base_2')
-        printer_control_node.sendGcodeSendingRequest(carriageReturn)
+        printer_control_node = PrinterControlNode('test_impression_base')
+        # printer_control_node.sendGcodeSendingRequest(carriageReturn)
         gcode = printer_control_node.loadGcode('/home/gulltor/Ramsai_Robotics/Gcodes/piece_test_base.gcode')
-        for i in range(90,len(gcode)):
-                # printer_control_node.sendGcodeSendingRequest(gcode[i])
+        for i in range(0,3):
+                printer_control_node.sendGcodeSendingRequest(gcode[i])
                 printer_control_node.takeCurrentLayerPhoto()
                 printer_control_node.scanCurrentLayer(gcode[i])
         rclpy.shutdown()

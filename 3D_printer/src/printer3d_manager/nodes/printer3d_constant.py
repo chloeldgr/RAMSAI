@@ -9,6 +9,6 @@ YMAX = 219
 ZMIN = 0
 ZMAX = 60
 
-GAP = 26
+GAP = 31.5
 
 YPOSPHOTO = 200
