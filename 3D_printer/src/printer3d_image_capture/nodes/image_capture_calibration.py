@@ -19,22 +19,46 @@ from printer3d_msgs.srv import GcodeCommand
 import cv2
 
 YPOSPHOTO = 200
+"""
+        Imagecapturenode class constructor.
 
+        Parameters
+        ----------
+            cam : int
+                camera number and specifically designed for linux systems. Defaults to 0.
+
+        """
 
 class ImageCaptureNode(Node):
     def __init__(self, cam=0):
+        """
+        Imagecapturenode class constructor.
+
+        Args:
+        ----
+            cam (int, optional): _description_. Defaults to 0.
+
+        """
         super().__init__('printer_image_capture')
         self.cameraNumber = cam
-
         self.client_printer_driver = self.create_client(GcodeCommand, 'send_gcode')
         while not self.client_printer_driver.wait_for_service(timeout_sec=1.0):
             self.get_logger().info('profile measure service not available, waiting again...')
         self.req_printer_driver = GcodeCommand.Request()
 
     def __del__(self):
+        """Imagecapturenode destructor. Release the camera."""
         self.webcam.release()
 
     def showVideo(self):
+        """
+        Show the image captured by the camera continuously. Can be stopped by pressing q.
+
+        Returns
+        -------
+            int: returns 0
+
+        """
         self.webcam = cv2.VideoCapture("/dev/video" + str(self.cameraNumber))  # Be careful with the number after video
         while (True):
             check, frame = self.webcam.read()
@@ -46,6 +70,14 @@ class ImageCaptureNode(Node):
         return 0
 
     def sendGcodeSendingRequest(self, gcode):
+        """
+        Ask for the sending of the gcode line "gcode" through the ROS2 service "send_gcode".
+
+        Args:
+        ----
+            gcode: list of gcode lines
+
+        """
         self.req_printer_driver.gcode_strings = gcode
         self.future_printer_driver = self.client_printer_driver.call_async(self.req_printer_driver)
         while rclpy.ok():

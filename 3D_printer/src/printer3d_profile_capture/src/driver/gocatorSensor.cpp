@@ -231,7 +231,7 @@ int gocator_sensor::Device::getProfile(pcl::PointCloud<pcl::PointXYZ> & _p_cloud
 
             for (k = 0; k < GoResampledProfileMsg_Count(profileMsg); ++k) {
               unsigned int validPointCount = 0;
-              __int16 * data = GoResampledProfileMsg_At(profileMsg, k);
+              short * data = GoResampledProfileMsg_At(profileMsg, k);
               double XResolution = NM_TO_MM(GoResampledProfileMsg_XResolution(profileMsg));
               double ZResolution = NM_TO_MM(GoResampledProfileMsg_ZResolution(profileMsg));
               double XOffset = UM_TO_MM(GoResampledProfileMsg_XOffset(profileMsg));

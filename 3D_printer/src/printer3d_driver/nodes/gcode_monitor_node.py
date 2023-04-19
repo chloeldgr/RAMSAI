@@ -21,7 +21,19 @@ from printer3d_msgs.srv import GcodeCommand
 
 
 def openSerialPort(port, baud):
-    # open the serial port
+    """
+    Handle the opening of the serial port and exit if the port haven't been opened.
+
+    Args:
+    -------
+        port (string): supposed to be "COM" plus the number associated to the
+        baud (int): baudrate of the port communication (commonly 9600, 115200, 250000 ...)
+
+    Returns
+    -------
+        pyserial object: an object allowing to send and receive data through USB
+
+    """
     print('Opening Serial Port...')
     try:
         s = serial.Serial(port, baud)
@@ -37,6 +49,18 @@ def openSerialPort(port, baud):
 
 
 def removeComment(string):
+    """
+    Remove the comments from a gcode line stored as a string.
+
+    Args
+    -------
+        string (string): gcode line with a possible comment inside
+
+    Returns
+    -------
+        string: input string without comment
+
+    """
     if (string.find(';') == -1):
         return string
     else:
@@ -45,6 +69,7 @@ def removeComment(string):
 
 class GcodeMonitorNode(Node):
     def __init__(self):
+        """Gcodemonitornode class constructor."""
         super().__init__('printer_gcode_monitor')
         self.serialPort = openSerialPort('/dev/ttyACM0', 250000)
         self.serialPort.write(b"\n\n")
@@ -52,6 +77,19 @@ class GcodeMonitorNode(Node):
         self.gcodeService = self.create_service(GcodeCommand, 'send_gcode', self.execute_gcode_sending)
 
     def execute_gcode_sending(self, request, response):
+        """
+        Execute this function of the service send_gcode provided by this ROS2 node.
+
+        Args
+        -------
+            request (list of string): list of gcode lines to be sended through the serial communication
+            response (bool): True
+
+        Returns
+        -------
+            bool: True
+
+        """
         gcode = request.gcode_strings
         self.get_logger().info('Executing Gcode')
         feedback = 0.0
