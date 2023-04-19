@@ -187,7 +187,6 @@ class PrinterControlNode(Node):
                     for points in profile:
                         profile_line.append([[points[0], 0, points[2]]])
                 break
-        self.get_logger().info('scan finished')
         return profile_line
 
     def sendGcodeSendingRequest(self, gcode):
@@ -198,18 +197,19 @@ class PrinterControlNode(Node):
         while rclpy.ok():
             rclpy.spin_once(self)
             if self.future_printer_driver.done():
-                self.get_logger().info('gcode sended')
                 break
-
 
 if __name__ == '__main__':
     carriageReturn = ['G28\n']
     rclpy.init()
-    printer_control_node = PrinterControlNode('impression_base_2')
+    printer_control_node = PrinterControlNode('impression_base_50_pourcents')
     printer_control_node.sendGcodeSendingRequest(carriageReturn)
     gcode = printer_control_node.loadGcode('/home/gulltor/Ramsai_Robotics/Gcodes/piece_test_base.gcode')
-    for i in range(90, len(gcode)):
-        # printer_control_node.sendGcodeSendingRequest(gcode[i])
+    for i in range(0, len(gcode)-1):
+        printer_control_node.get_logger.info('lancement de la couche '+str(i+1)+' sur '+str(len(gcode)-1))
+        printer_control_node.sendGcodeSendingRequest(gcode[i])
+        printer_control_node.get_logger.info('fin de la couche '+str(i+1)+' sur '+str(len(gcode)))
         printer_control_node.takeCurrentLayerPhoto()
         printer_control_node.scanCurrentLayer(gcode[i])
+        
     rclpy.shutdown()

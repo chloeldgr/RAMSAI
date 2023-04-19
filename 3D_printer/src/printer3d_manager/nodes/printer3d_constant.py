@@ -20,7 +20,7 @@ YMIN = 0
 YMAX = 219
 
 ZMIN = 0
-ZMAX = 60
+ZMAX = 58
 
 GAP = 31.5
 
