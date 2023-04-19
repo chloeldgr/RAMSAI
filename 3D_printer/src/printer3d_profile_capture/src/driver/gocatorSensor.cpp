@@ -14,7 +14,7 @@
 
 #include "gocatorSensor.h"
 
-GocatorSensor::Device::Device(const std::string & _ip_address)
+gocator_sensor::Device::Device(const std::string & _ip_address)
 {
   kStatus status;
   kIpAddress ipAddress;
@@ -95,7 +95,7 @@ GocatorSensor::Device::Device(const std::string & _ip_address)
   device_params_.print();
 }
 
-GocatorSensor::Device::~Device()
+gocator_sensor::Device::~Device()
 {
   kStatus status;
 
@@ -107,7 +107,7 @@ GocatorSensor::Device::~Device()
   std::cout << "~Device(). Gocator Sensor Stopped and Device Object Destroyed." << std::endl;
 }
 
-int GocatorSensor::Device::configure(const CaptureParams & _configs)
+int gocator_sensor::Device::configure(const CaptureParams & _configs)
 {
   kStatus status;
 
@@ -139,7 +139,7 @@ int GocatorSensor::Device::configure(const CaptureParams & _configs)
   return 1;
 }
 
-int GocatorSensor::Device::start()
+int gocator_sensor::Device::start()
 {
   kStatus status;
 
@@ -159,7 +159,7 @@ int GocatorSensor::Device::start()
   return 1;
 }
 
-int GocatorSensor::Device::stop()
+int gocator_sensor::Device::stop()
 {
   kStatus status;
 
@@ -179,15 +179,15 @@ int GocatorSensor::Device::stop()
   return 1;
 }
 
-int GocatorSensor::Device::getCurrentSnapshot(pcl::PointCloud<pcl::PointXYZ> & _p_cloud)
+int gocator_sensor::Device::getCurrentSnapshot(pcl::PointCloud<pcl::PointXYZ> & _p_cloud)
 {
 }
 
-int GocatorSensor::Device::getSingleSnapshot(pcl::PointCloud<pcl::PointXYZ> & _p_cloud)
+int gocator_sensor::Device::getSingleSnapshot(pcl::PointCloud<pcl::PointXYZ> & _p_cloud)
 {
 }
 
-int GocatorSensor::Device::getProfile(pcl::PointCloud<pcl::PointXYZ> & _p_cloud)
+int gocator_sensor::Device::getProfile(pcl::PointCloud<pcl::PointXYZ> & _p_cloud)
 {
   unsigned int i, j, k, arrayIndex;
   GoDataSet dataset = kNULL;
@@ -338,7 +338,7 @@ int GocatorSensor::Device::getProfile(pcl::PointCloud<pcl::PointXYZ> & _p_cloud)
   return 1;
 }
 
-void GocatorSensor::Device::getDeviceHealth(std::string & _health_str) const
+void gocator_sensor::Device::getDeviceHealth(std::string & _health_str) const
 {
   // local variables
   GoDataSet health_data = kNULL;
@@ -364,7 +364,7 @@ void GocatorSensor::Device::getDeviceHealth(std::string & _health_str) const
   _health_str = sstr.str();
 }
 
-void GocatorSensor::Device::getTemperature(
+void gocator_sensor::Device::getTemperature(
   double & _internal_temp, double & _projector_temp,
   double & _laser_temp) const
 {
@@ -402,15 +402,15 @@ void GocatorSensor::Device::getTemperature(
   }
 }
 
-int GocatorSensor::Device::close()
+int gocator_sensor::Device::close()
 {
 }
 
-void GocatorSensor::Device::printDeviceData() const
+void gocator_sensor::Device::printDeviceData() const
 {
 }
 
-void GocatorSensor::Device::sendTrigger() const
+void gocator_sensor::Device::sendTrigger() const
 {
   printf("sending trigger \n");
   kStatus status = GoSensor_Trigger(go_sensor_);

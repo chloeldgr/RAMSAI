@@ -32,7 +32,7 @@ public:
   GocatorSensorNode()
   : Node("gocatorSensorNode")
   {
-    gsensor_ = new GocatorSensor::Device(SENSOR_IP);
+    gsensor_ = new gocator_sensor::Device(SENSOR_IP);
     capture_params_.exposure_time_ = 110;
     capture_params_.spacing_interval_ = 0.1;
     gsensor_->configure(capture_params_);
@@ -69,8 +69,8 @@ private:
 
   rclcpp::Service<printer3d_gocator_msgs::srv::GocatorPTCloud>::SharedPtr service_;
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr publisher_;
-  GocatorSensor::Device * gsensor_;
-  GocatorSensor::CaptureParams capture_params_;
+  gocator_sensor::Device * gsensor_;
+  gocator_sensor::CaptureParams capture_params_;
 };
 
 int main(int argc, char * argv[])
