@@ -13,10 +13,12 @@
 # limitations under the License.
 #
 # Author: Maciej Bednarczyk
+
 from launch import LaunchDescription
 from launch_ros.actions import Node
 from launch.substitutions import Command, FindExecutable, PathJoinSubstitution
 from launch_ros.substitutions import FindPackageShare
+from launch_ros.descriptions import ParameterFile
 
 
 def generate_launch_description():
@@ -44,7 +46,7 @@ def generate_launch_description():
       ),
       ' ',
       'name:=',
-      'iiwa',
+      'iiwa_print',
     ]
   )
 
@@ -64,21 +66,19 @@ def generate_launch_description():
     [FindPackageShare('iiwa_description'), 'moveit2', 'iiwa_cartesian_limits.yaml']
   )
 
-  robot_cartesian_config = PathJoinSubstitution(
+  robot_cartesian_config = ParameterFile(PathJoinSubstitution(
     [FindPackageShare('ramsai_planning'), 'config', 'robot_cartesian_config.yaml']
-  )
+  ))
 
-  # Demo node
   common_hybrid_planning_param = PathJoinSubstitution(
     [FindPackageShare('ramsai_description'), 'moveit2', 'common_hybrid_planning_params.yaml']
   )
 
 
-  demo_node = Node(
-    name = 'robot_cartesian_hybrid_pilz',
+  hybrid_node = Node(
+    name = 'robot_cartesian_hybrid_planning',
     package ='ramsai_planning',
-    executable ='robot_cartesian_hybrid_pilz',
-    name ='hybrid_planning_demo_node',
+    executable ='robot_cartesian_hybrid_planning',
     output ='screen',
     parameters = [
       robot_description,
@@ -92,4 +92,4 @@ def generate_launch_description():
     ],
   )
 
-  return LaunchDescription([demo_node])
+  return LaunchDescription([hybrid_node])

@@ -43,7 +43,7 @@ def generate_launch_description():
             ),
             ' ',
             'name:=',
-            'iiwa',
+            'iiwa_print',
         ]
     )
 
