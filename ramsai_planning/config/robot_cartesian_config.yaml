@@ -1,10 +1,10 @@
 /**:
   ros__parameters:
     waypoint_file_type: "apt"
-    waypoint_file_path: "/home/mcbed/dev/github_dev/RAMSAI/ramsai_planning/config/example_apt/1-1_plan_3x.apt"
+    waypoint_file_path: "$(find-pkg-share ramsai_planning)/config/example_apt/1-1_plan_3x.apt"
     shift: [0.0, 0.7, 0.2]
     scale: 0.001
     velcocity_scaling: 0.2
     acceleration_scaling: 0.1
     plot_waypoints: true
-    plot_frames: true
+    plot_frames: false

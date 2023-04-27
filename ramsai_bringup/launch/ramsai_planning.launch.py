@@ -16,8 +16,9 @@ from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
 from launch.conditions import IfCondition
 from launch.substitutions import Command, FindExecutable, LaunchConfiguration, PathJoinSubstitution
-from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
+from launch_ros.actions import Node, ComposableNodeContainer
+from launch_ros.descriptions import ComposableNode
 
 
 def generate_launch_description():
@@ -74,11 +75,11 @@ def generate_launch_description():
             PathJoinSubstitution([FindExecutable(name="xacro")]),
             " ",
             PathJoinSubstitution(
-                [FindPackageShare('iiwa_description'), 'srdf', 'iiwa.srdf.xacro']
+                [FindPackageShare('ramsai_description'), 'srdf', 'iiwa.srdf.xacro']
             ),
             " ",
             "name:=",
-            "iiwa",
+            "iiwa_print",
         ]
     )
 
@@ -155,6 +156,95 @@ def generate_launch_description():
         ],
     )
 
+    ##############################
+    # Hybrid Planning
+    ##############################
+
+    # Load params
+    common_hybrid_planning_param = PathJoinSubstitution([
+        FindPackageShare("ramsai_description"),
+        'moveit2',
+        'common_hybrid_planning_params.yaml',
+      ]
+    )
+
+    global_planner_param = PathJoinSubstitution([
+        FindPackageShare("ramsai_description"),
+        'moveit2',
+        'global_planner.yaml',
+      ]
+    )
+
+    local_planner_param = PathJoinSubstitution([
+        FindPackageShare("ramsai_description"),
+        'moveit2',
+        'local_planner.yaml',
+      ]
+    )
+    
+    hybrid_planning_manager_param = PathJoinSubstitution([
+        FindPackageShare("ramsai_description"),
+        'moveit2',
+        'hybrid_planning_manager.yaml',
+      ]
+    )
+
+    servo_params = PathJoinSubstitution([
+        FindPackageShare("iiwa_description"),
+        'moveit2',
+        'iiwa_moveit2_servo_config.yaml',
+      ]
+    )
+
+    # Hybrid planner container
+    planning_container = ComposableNodeContainer(
+      name="hybrid_planning_container",
+      namespace="/",
+      package="rclcpp_components",
+      executable="component_container",
+      composable_node_descriptions=[
+        ComposableNode(
+          package="moveit_hybrid_planning",
+          plugin="moveit::hybrid_planning::GlobalPlannerComponent",
+          name="global_planner",
+          parameters=[
+            common_hybrid_planning_param,
+            global_planner_param,
+            robot_description,
+            robot_description_semantic,
+            robot_description_kinematics,
+            robot_description_planning_cartesian_limits,
+            moveit_controllers,
+          ],
+        ),
+        ComposableNode(
+          package="moveit_hybrid_planning",
+          plugin="moveit::hybrid_planning::LocalPlannerComponent",
+          name="local_planner",
+          parameters=[
+            common_hybrid_planning_param,
+            local_planner_param,
+            robot_description,
+            robot_description_semantic,
+            robot_description_kinematics,
+            servo_params,
+            moveit_controllers,
+          ],
+        ),
+        ComposableNode(
+          package="moveit_hybrid_planning",
+          plugin="moveit::hybrid_planning::HybridPlanningManager",
+          name="hybrid_planning_manager",
+          parameters=[
+            common_hybrid_planning_param,
+            hybrid_planning_manager_param,
+          ],
+        ),
+      ],
+      output="screen",
+    )
+
+
     rviz_config_file = PathJoinSubstitution(
         [FindPackageShare('iiwa_description'), 'rviz', 'iiwa.rviz']
     )
@@ -179,6 +269,7 @@ def generate_launch_description():
 
     nodes = [
         move_group_node,
+        planning_container,
         rviz_node,
     ]
 

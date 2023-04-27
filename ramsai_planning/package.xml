@@ -24,7 +24,9 @@
   <depend>moveit_ros_planning</depend>
   <depend>moveit_visual_tools</depend>
   <depend>control_msgs</depend>
+  <depend>moveit_hybrid_planning</depend>
 
+  <exec_depend>moveit_servo</exec_depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>

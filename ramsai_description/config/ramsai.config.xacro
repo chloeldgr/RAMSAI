@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!-- Kuka iiwa 14 7DoF manipulator -->
-<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="iiwa14">
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="iiwa_print">
 
     <!-- Enable setting arguments from the launch file -->
     <xacro:arg name="use_sim" default="false" />
@@ -26,12 +26,12 @@
         <static>true</static>
     </gazebo>
 
-    <xacro:iiwa14 parent="world" prefix="$(arg prefix)">
+    <xacro:iiwa_print parent="world" prefix="$(arg prefix)">
         <origin xyz="0 0 0" rpy="0 0 0" />
-    </xacro:iiwa14>
+    </xacro:iiwa_print>
 
     <xacro:iiwa_r2c_hardware
-        name="iiwaRobot" prefix="$(arg prefix)"
+        name="iiwa_print" prefix="$(arg prefix)"
         robot_ip="$(arg robot_ip)" robot_port="$(arg robot_port)"
         command_interface="$(arg command_interface)"
         initial_positions_file="$(arg initial_positions_file)"

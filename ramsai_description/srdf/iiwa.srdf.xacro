@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot xmlns:xacro="http://wiki.ros.org/xacro" name="$(arg name)">
+
+  <xacro:arg name="name" default="iiwa_print"/>
+  <xacro:arg name="prefix" default="" />
+  <xacro:arg name="description_package" default="ramsai_description" />
+
+  <xacro:property name="description_package" value="$(arg description_package)"/>
+  <xacro:include filename="$(find ${description_package})/srdf/iiwa_macro.srdf.xacro"/>
+
+  <xacro:iiwa_print_srdf name="iiwa" prefix="$(arg prefix)"/>
+
+</robot>

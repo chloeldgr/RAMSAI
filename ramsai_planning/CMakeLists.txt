@@ -18,6 +18,8 @@ find_package(control_msgs REQUIRED)
 find_package(moveit_core REQUIRED)
 find_package(moveit_ros_planning REQUIRED)
 find_package(moveit_ros_planning_interface REQUIRED)
+find_package(moveit_hybrid_planning REQUIRED)
+find_package(moveit_servo REQUIRED)
 find_package(moveit_visual_tools REQUIRED)
 find_package(geometric_shapes REQUIRED)
 find_package(rclcpp REQUIRED)
@@ -37,6 +39,8 @@ set(THIS_PACKAGE_INCLUDE_DEPENDS
   moveit_core
   moveit_visual_tools
   moveit_ros_planning_interface
+  moveit_hybrid_planning
+  moveit_servo
   tf2_geometry_msgs
   moveit_ros_planning
   pluginlib
@@ -45,33 +49,63 @@ set(THIS_PACKAGE_INCLUDE_DEPENDS
   control_msgs
 )
 
-add_executable(
-  robot_cartesian_ompl
+include_directories(include)
+
+add_executable(robot_cartesian_ompl
   src/robot_cartesian_ompl.cpp
   src/helper_tools.hpp
 )
 
-add_executable(
-  robot_cartesian_pilz
+add_executable(robot_cartesian_pilz
   src/robot_cartesian_pilz.cpp
   src/helper_tools.hpp
 )
 
-ament_target_dependencies( robot_cartesian_ompl ${THIS_PACKAGE_INCLUDE_DEPENDS} Boost)
-ament_target_dependencies( robot_cartesian_pilz ${THIS_PACKAGE_INCLUDE_DEPENDS} Boost)
+add_executable(robot_cartesian_hybrid_planning
+  src/robot_cartesian_hybrid_planning.cpp
+  src/helper_tools.hpp
+)
+
+add_library(servo_local_solver SHARED src/servo_solver.cpp)
+add_library(servo_sampler SHARED src/servo_sampler.cpp)
+
+ament_target_dependencies(robot_cartesian_ompl PUBLIC ${THIS_PACKAGE_INCLUDE_DEPENDS} Boost)
+ament_target_dependencies(robot_cartesian_pilz PUBLIC ${THIS_PACKAGE_INCLUDE_DEPENDS} Boost)
+ament_target_dependencies(robot_cartesian_hybrid_planning PUBLIC ${THIS_PACKAGE_INCLUDE_DEPENDS})
+ament_target_dependencies(servo_local_solver ${THIS_PACKAGE_INCLUDE_DEPENDS})
+ament_target_dependencies(servo_sampler ${THIS_PACKAGE_INCLUDE_DEPENDS})
+
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
 endif()
 
-install(TARGETS
-  robot_cartesian_ompl
-  robot_cartesian_pilz
-  DESTINATION lib/${PROJECT_NAME}
+install(
+  TARGETS
+    robot_cartesian_ompl
+    robot_cartesian_pilz
+    robot_cartesian_hybrid_planning
+    servo_local_solver
+    servo_sampler
+  EXPORT export_${PROJECT_NAME}
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
+
 install(DIRECTORY launch config
   DESTINATION share/${PROJECT_NAME}
 )
+
+pluginlib_export_plugin_description_file(moveit_hybrid_planning plugins.xml)
+
+ament_export_libraries(
+  servo_local_solver
+  servo_sampler
+)
+
+ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
+ament_export_dependencies(${THIS_PACKAGE_INCLUDE_DEPENDS})
 
 ament_package()
