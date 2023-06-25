@@ -190,9 +190,9 @@ def generate_launch_description():
     )
 
     servo_params = PathJoinSubstitution([
-        FindPackageShare("iiwa_description"),
+        FindPackageShare("ramsai_description"),
         'moveit2',
-        'iiwa_moveit2_servo_config.yaml',
+        'servo_config.yaml',
       ]
     )
 
@@ -246,7 +246,7 @@ def generate_launch_description():
 
 
     rviz_config_file = PathJoinSubstitution(
-        [FindPackageShare('iiwa_description'), 'rviz', 'iiwa.rviz']
+        [FindPackageShare('ramsai_description'), 'rviz', 'ramsai.rviz']
     )
 
     rviz_node = Node(

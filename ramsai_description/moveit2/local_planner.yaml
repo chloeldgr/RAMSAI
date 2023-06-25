@@ -2,11 +2,11 @@
   ros__parameters:
     robot_description: "robot_description"
     group_name: "iiwa_arm"
-    trajectory_operator_plugin_name: "moveit_hybrid_planning/SimpleSampler"
-    # trajectory_operator_plugin_name: "ramsai_planning/ServoSampler"
-    local_constraint_solver_plugin_name: "moveit_hybrid_planning/ForwardTrajectory"
-    # local_constraint_solver_plugin_name: "ramsai_planning/ServoSolver"
-    local_planning_frequency: 100.0
+    # trajectory_operator_plugin_name: "moveit_hybrid_planning/SimpleSampler"
+    trajectory_operator_plugin_name: "ramsai_planning/ServoSampler"
+    # local_constraint_solver_plugin_name: "moveit_hybrid_planning/ForwardTrajectory"
+    local_constraint_solver_plugin_name: "ramsai_planning/ServoSolver"
+    local_planning_frequency: 225.0
     global_solution_topic: "global_trajectory"
     local_solution_topic: "/joint_trajectory_controller/joint_trajectory_2"
     local_solution_topic_type: "trajectory_msgs/JointTrajectory" # or "std_msgs/Float64MultiArray"
