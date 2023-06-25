@@ -5,6 +5,7 @@
 namespace ramsai_planning
 {
 constexpr double WAYPOINT_RADIAN_TOLERANCE = 0.2;  // rad: L1-norm sum for all joints
+constexpr double POSITION_TOLERANCE = 0.001;  
 const rclcpp::Logger LOGGER = rclcpp::get_logger("local_planner_component");
 
 bool ServoSampler::initialize(const rclcpp::Node::SharedPtr& node,
@@ -67,10 +68,12 @@ ServoSampler::getLocalTrajectory(const moveit::core::RobotState& current_state,
 
     // Check if state reached
     auto sum_joint_distance = next_desired_goal_state.distance(current_state);
-    // double pos_distance = (current_state.getFrameTransform("tool0").translation() -
-    //                        next_desired_goal_state.getFrameTransform("tool0").translation())
-    //                           .norm();
-    if (sum_joint_distance <= WAYPOINT_RADIAN_TOLERANCE)
+    double pos_distance = (current_state.getFrameTransform("tool0").translation() -
+                           next_desired_goal_state.getFrameTransform("tool0").translation())
+                              .norm();
+    // std::cout << "sum joint distance = " << sum_joint_distance << std::endl;
+    // if (sum_joint_distance <= WAYPOINT_RADIAN_TOLERANCE)
+    if (pos_distance <= POSITION_TOLERANCE)
     {
       // Update index (and thus desired robot state)
       next_waypoint_index_ += 1;

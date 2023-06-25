@@ -66,14 +66,22 @@ add_executable(robot_cartesian_hybrid_planning
   src/helper_tools.hpp
 )
 
+add_executable(cancel_hybrid_planning
+  src/cancel_hybrid_planning.cpp
+)
+
 add_library(servo_local_solver SHARED src/servo_solver.cpp)
 add_library(servo_sampler SHARED src/servo_sampler.cpp)
+add_library(motion_planning_pipeline SHARED src/global_planning_pipeline.cpp)
 
 ament_target_dependencies(robot_cartesian_ompl PUBLIC ${THIS_PACKAGE_INCLUDE_DEPENDS} Boost)
 ament_target_dependencies(robot_cartesian_pilz PUBLIC ${THIS_PACKAGE_INCLUDE_DEPENDS} Boost)
 ament_target_dependencies(robot_cartesian_hybrid_planning PUBLIC ${THIS_PACKAGE_INCLUDE_DEPENDS})
+ament_target_dependencies(cancel_hybrid_planning PUBLIC ${THIS_PACKAGE_INCLUDE_DEPENDS})
+
 ament_target_dependencies(servo_local_solver ${THIS_PACKAGE_INCLUDE_DEPENDS})
 ament_target_dependencies(servo_sampler ${THIS_PACKAGE_INCLUDE_DEPENDS})
+ament_target_dependencies(motion_planning_pipeline ${THIS_PACKAGE_INCLUDE_DEPENDS})
 
 
 if(BUILD_TESTING)
@@ -86,8 +94,10 @@ install(
     robot_cartesian_ompl
     robot_cartesian_pilz
     robot_cartesian_hybrid_planning
+    cancel_hybrid_planning
     servo_local_solver
     servo_sampler
+    motion_planning_pipeline
   EXPORT export_${PROJECT_NAME}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
@@ -103,6 +113,7 @@ pluginlib_export_plugin_description_file(moveit_hybrid_planning plugins.xml)
 ament_export_libraries(
   servo_local_solver
   servo_sampler
+  motion_planning_pipeline
 )
 
 ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)

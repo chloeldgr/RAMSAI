@@ -42,7 +42,7 @@ def generate_launch_description():
       PathJoinSubstitution([FindExecutable(name='xacro')]),
       ' ',
       PathJoinSubstitution(
-        [FindPackageShare('iiwa_description'), 'srdf', 'iiwa.srdf.xacro']
+        [FindPackageShare('ramsai_description'), 'srdf', 'iiwa.srdf.xacro']
       ),
       ' ',
       'name:=',
@@ -66,9 +66,12 @@ def generate_launch_description():
     [FindPackageShare('iiwa_description'), 'moveit2', 'iiwa_cartesian_limits.yaml']
   )
 
-  robot_cartesian_config = ParameterFile(PathJoinSubstitution(
-    [FindPackageShare('ramsai_planning'), 'config', 'robot_cartesian_config.yaml']
-  ))
+  robot_cartesian_config = ParameterFile(
+    PathJoinSubstitution(
+      [FindPackageShare('ramsai_planning'), 'config', 'robot_cartesian_config.yaml']
+    ),
+    allow_substs=True
+  )
 
   common_hybrid_planning_param = PathJoinSubstitution(
     [FindPackageShare('ramsai_description'), 'moveit2', 'common_hybrid_planning_params.yaml']
@@ -88,7 +91,6 @@ def generate_launch_description():
       joint_limits_yaml,
       cartesian_limits_yaml,
       robot_cartesian_config,
-      {"use_sim_time": True},
     ],
   )
 

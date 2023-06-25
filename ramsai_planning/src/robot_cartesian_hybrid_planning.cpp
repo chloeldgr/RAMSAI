@@ -82,28 +82,28 @@ public:
     RCLCPP_INFO(LOGGER, "Initialize Planning Scene Monitor");
     tf_buffer_ = std::make_shared<tf2_ros::Buffer>(node_->get_clock());
 
-    // planning_scene_monitor_ = std::make_shared<planning_scene_monitor::PlanningSceneMonitor>(
-    //     node_, "robot_description", tf_buffer_, "planning_scene_monitor");
-    // if (!planning_scene_monitor_->getPlanningScene())
-    // {
-    //   RCLCPP_ERROR(LOGGER, "The planning scene was not retrieved!");
-    //   return;
-    // }
-    // else
-    // {
-    //   planning_scene_monitor_->startStateMonitor();
-    //   planning_scene_monitor_->providePlanningSceneService();  // let RViz display query PlanningScene
-    //   planning_scene_monitor_->setPlanningScenePublishingFrequency(100);
-    //   planning_scene_monitor_->startPublishingPlanningScene(planning_scene_monitor::PlanningSceneMonitor::UPDATE_SCENE,
-    //                                                         "/monitored_planning_scene");
-    //   planning_scene_monitor_->startSceneMonitor();
-    // }
+    planning_scene_monitor_ = std::make_shared<planning_scene_monitor::PlanningSceneMonitor>(
+        node_, "robot_description", tf_buffer_, "planning_scene_monitor");
+    if (!planning_scene_monitor_->getPlanningScene())
+    {
+      RCLCPP_ERROR(LOGGER, "The planning scene was not retrieved!");
+      return;
+    }
+    else
+    {
+      planning_scene_monitor_->startStateMonitor();
+      planning_scene_monitor_->providePlanningSceneService();  // let RViz display query PlanningScene
+      planning_scene_monitor_->setPlanningScenePublishingFrequency(100);
+      planning_scene_monitor_->startPublishingPlanningScene(planning_scene_monitor::PlanningSceneMonitor::UPDATE_SCENE,
+                                                            "/planning_scene");
+      planning_scene_monitor_->startSceneMonitor();
+    }
 
-    // if (!planning_scene_monitor_->waitForCurrentRobotState(node_->now(), 5))
-    // {
-    //   RCLCPP_ERROR(LOGGER, "Timeout when waiting for /joint_states updates. Is the robot running?");
-    //   return;
-    // }
+    if (!planning_scene_monitor_->waitForCurrentRobotState(node_->now(), 5))
+    {
+      RCLCPP_ERROR(LOGGER, "Timeout when waiting for /joint_states updates. Is the robot running?");
+      return;
+    }
 
     if (!hp_action_client_->wait_for_action_server(20s))
     {
@@ -125,11 +125,11 @@ public:
     // Configure a valid robot state
     robot_state->setToDefaultValues(joint_model_group, "ready");
     robot_state->update();
-    // // Lock the planning scene as briefly as possible
-    // {
-    //   planning_scene_monitor::LockedPlanningSceneRW locked_planning_scene(planning_scene_monitor_);
-    //   locked_planning_scene->setCurrentState(*robot_state);
-    // }
+    // Lock the planning scene as briefly as possible
+    {
+      planning_scene_monitor::LockedPlanningSceneRW locked_planning_scene(planning_scene_monitor_);
+      locked_planning_scene->setCurrentState(*robot_state);
+    }
 
     // get waypoints from file
     std::string waypoint_file_path, waypoint_file_type;
@@ -146,6 +146,8 @@ public:
     } else if (waypoint_file_type == "apt") {
       waypoints = apt2path(waypoint_file_path, shift, scale);
     }
+
+    // waypoints.resize(1);
 
     RCLCPP_INFO(LOGGER, "loaded %li waypoints", waypoints.size());
 
@@ -168,6 +170,8 @@ public:
       }
     }
     rvisual_tools.trigger();
+    rclcpp::sleep_for(2s);
+    rvisual_tools.trigger();
 
     double velcocity_scaling, acceleration_scaling;
     node_->get_parameter("velcocity_scaling", velcocity_scaling);
@@ -176,6 +180,23 @@ public:
     // Setup
     std::vector<double> tolerance_pose(3, 1e-8);
     std::vector<double> tolerance_angle(3, 1e-8);
+
+    // Goto starting point
+    move_group.setPlanningPipelineId("pilz");
+    move_group.setPlannerId("LIN");
+    move_group.setPoseTarget(waypoints[0]);
+    moveit::planning_interface::MoveGroupInterface::Plan my_plan;
+    bool success = (move_group.plan(my_plan) == moveit::core::MoveItErrorCode::SUCCESS);
+    if (success) {
+      move_group.move();
+    }
+    move_group.setPoseTarget(waypoints[1]);
+    success = (move_group.plan(my_plan) == moveit::core::MoveItErrorCode::SUCCESS);
+    if (success) {
+      move_group.move();
+    }
+
+    RCLCPP_INFO(LOGGER, "Moving to starting point %s", success ? "" : "FAILED");
 
     // Create desired motion goal
     moveit_msgs::msg::MotionPlanRequest goal_motion_request;
@@ -193,12 +214,10 @@ public:
     goal_motion_request.planner_id = "LIN";
     goal_motion_request.pipeline_id = "pilz";
 
-    for (auto w = 0ul; w < waypoints.size(); w++) {
-      pose = move_group.getCurrentPose("tool0");
+    for (auto w = 2ul; w < waypoints.size(); w++) {
+      pose.header.frame_id = "iiwa_base";
       pose.pose = waypoints[w];
-      pose_goal = kinematic_constraints::constructGoalConstraints(
-        "tool0", pose, tolerance_pose, tolerance_angle
-      );
+      pose_goal = kinematic_constraints::constructGoalConstraints("tool0", pose);
       goal_motion_request.goal_constraints.clear();
       goal_motion_request.goal_constraints.push_back(pose_goal);
       goal_motion_request.start_state = moveit_msgs::msg::RobotState();
@@ -207,6 +226,7 @@ public:
       sequence_item.blend_radius = 0.0;
 
       sequence_request.items.push_back(sequence_item);
+
     }
 
     auto goal_action_request = moveit_msgs::action::HybridPlanner::Goal();
@@ -248,7 +268,7 @@ private:
   rclcpp::Node::SharedPtr node_;
   rclcpp_action::Client<moveit_msgs::action::HybridPlanner>::SharedPtr hp_action_client_;
   rclcpp::Subscription<moveit_msgs::msg::MotionPlanResponse>::SharedPtr global_solution_subscriber_;
-  // planning_scene_monitor::PlanningSceneMonitorPtr planning_scene_monitor_;
+  planning_scene_monitor::PlanningSceneMonitorPtr planning_scene_monitor_;
   rclcpp::TimerBase::SharedPtr timer_;
 
   // TF

@@ -9,4 +9,9 @@
     <description>Trajectory Operator for Servo local solver.</description>
   </class>
 </library>
+<library path="motion_planning_pipeline">
+  <class name="ramsai_planning/GlobalPlanningPipeline" type="ramsai_planning::GlobalPlanningPipeline" base_class_type="moveit::hybrid_planning::GlobalPlannerInterface">
+    <description>Global Planner using pilz.</description>
+  </class>
+</library>
 </class_libraries>
