@@ -17,6 +17,9 @@
     <!-- Import iiwa ros2_control description -->
     <xacro:include filename="$(find iiwa_description)/ros2_control/iiwa.r2c_hardware.xacro" />
 
+    <!-- Import extruder ros2_control description -->
+    <xacro:include filename="$(find ramsai_description)/ros2_control/extruder.ros2_control.xacro" />
+
     <!-- Import all Gazebo-customization elements -->
     <!-- <xacro:include filename="$(find iiwa_description)/gazebo/iiwa.gazebo"/> -->
 
@@ -37,4 +40,6 @@
         initial_positions_file="$(arg initial_positions_file)"
         use_sim="$(arg use_sim)" use_fake_hardware="$(arg use_fake_hardware)"
         />
+
+    <xacro:extruder/>
 </robot>

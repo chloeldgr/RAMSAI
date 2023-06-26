@@ -16,6 +16,8 @@ from launch import LaunchDescription
 from launch_ros.actions import Node
 from launch.substitutions import Command, FindExecutable, PathJoinSubstitution
 from launch_ros.substitutions import FindPackageShare
+from launch_ros.descriptions import ParameterFile
+
 
 
 def generate_launch_description():
@@ -65,11 +67,13 @@ def generate_launch_description():
         ]
     )
 
-    robot_cartesian_config = PathJoinSubstitution([
-            FindPackageShare('ramsai_planning'),
-            'config',
-            'robot_cartesian_config.yaml'
-        ]
+    robot_cartesian_config = ParameterFile(
+      PathJoinSubstitution([
+        FindPackageShare('ramsai_planning'),
+        'config',
+        'robot_cartesian_config.yaml'
+      ]),
+      allow_substs=True
     )
 
     move_group_interface = Node(

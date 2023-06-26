@@ -169,9 +169,9 @@ def generate_launch_description():
 
     robot_controllers = PathJoinSubstitution(
         [
-            FindPackageShare('iiwa_description'),
+            FindPackageShare('ramsai_description'),
             'config',
-            'iiwa_controllers.yaml',
+            'ramsai_controllers.yaml',
         ]
     )
     rviz_config_file = PathJoinSubstitution(
@@ -241,6 +241,13 @@ def generate_launch_description():
         condition=UnlessCondition(use_sim),
     )
 
+    gpio_command_controller = Node(
+        package='controller_manager',
+        executable='spawner',
+        arguments=['gpio_command_controller', '--controller-manager',
+                   ['controller_manager']],
+    )
+
     robot_controller_spawner = Node(
         package='controller_manager',
         executable='spawner',
@@ -293,6 +300,7 @@ def generate_launch_description():
         delay_rviz_after_joint_state_broadcaster_spawner,
         external_torque_broadcaster_spawner,
         delay_robot_controller_spawner_after_joint_state_broadcaster_spawner,
+        gpio_command_controller
     ]
 
     return LaunchDescription(declared_arguments + nodes)

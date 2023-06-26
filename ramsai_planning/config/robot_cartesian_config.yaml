@@ -1,10 +1,10 @@
 /**:
   ros__parameters:
     waypoint_file_type: "apt"
-    waypoint_file_path: "$(find-pkg-share ramsai_planning)/config/example_apt/1-1_plan_3x.apt"
-    shift: [0.3, 0.7, 0.2]
+    waypoint_file_path: "$(find-pkg-share ramsai_planning)/config/example_apt/230623_demo_kuka_V1.apt"
+    shift: [0.0, 0.8, 0.1]
     scale: 0.001
-    velcocity_scaling: 0.2
+    velcocity_scaling: 0.02
     acceleration_scaling: 0.1
     plot_waypoints: true
     plot_frames: true
