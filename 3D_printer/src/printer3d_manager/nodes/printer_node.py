@@ -23,28 +23,33 @@ import numpy as np
 
 
 class PrinterControlNode(Node):
-    def __init__(self, historyFilename):
+    def __init__(self):
         super().__init__('printer_control')
 
+        self.declare_parameter('history_file_dir', './printing_history')
+        historyFileDir = self.get_parameter('history_file_dir').get_parameter_value().string_value
+        self.get_logger().info(historyFileDir)
+        self.declare_parameter('gcode_file_dir', './piece.gcode')
+        self.gcodeFileDir = self.get_parameter('gcode_file_dir').get_parameter_value().string_value
+        self.get_logger().info(self.gcodeFileDir)
         """Initialisation of the printing process workspace"""
-        self.historyFilename = historyFilename
         try:
-            os.mkdir('/home/gulltor/Ramsai_Robotics/history/'+historyFilename)
+            os.mkdir(historyFileDir)
         except Exception:
             pass
 
         try:
-            os.mkdir('/home/gulltor/Ramsai_Robotics/history/'+historyFilename+'/gcode')
+            os.mkdir(historyFileDir+'/gcode')
         except Exception:
             pass
 
         try:
-            os.mkdir('/home/gulltor/Ramsai_Robotics/history/'+historyFilename+'/scan')
+            os.mkdir(historyFileDir+'/scan')
         except Exception:
             pass
 
         try:
-            os.mkdir('/home/gulltor/Ramsai_Robotics/history/'+historyFilename+'/photos')
+            os.mkdir(historyFileDir+'/photos')
         except Exception:
             pass
 
@@ -52,14 +57,14 @@ class PrinterControlNode(Node):
 
         self.client_printer_driver = self.create_client(GcodeCommand, 'send_gcode')
         while not self.client_printer_driver.wait_for_service(timeout_sec=1.0):
-            self.get_logger().info('profile measure service not available, waiting again...')
+            self.get_logger().info('gcode driver service not available, waiting again...')
         self.req_printer_driver = GcodeCommand.Request()
 
         self.imageNumber = 0
         self.scanNumber = 0
 
-    def loadGcode(self, gcodeFilename):
-        fileFullGcode = open(gcodeFilename)
+    def loadGcode(self):
+        fileFullGcode = open(self.gcodeFileDir)
         rawGode = fileFullGcode.readlines()
         fileFullGcode.close()
 
@@ -116,9 +121,9 @@ class PrinterControlNode(Node):
 if __name__ == '__main__':
     carriageReturn = ['G28\n']
     rclpy.init()
-    printer_control_node = PrinterControlNode('impression_base_50_pourcents')
+    printer_control_node = PrinterControlNode()
     printer_control_node.sendGcodeSendingRequest(carriageReturn)
-    gcode = printer_control_node.loadGcode('/home/gulltor/Ramsai_Robotics/Gcodes/piece_test_base.gcode')
+    gcode = printer_control_node.loadGcode()
     for i in range(0, len(gcode)-1):
         printer_control_node.get_logger.info('lancement de la couche '+str(i+1)+' sur '+str(len(gcode)-1))
         printer_control_node.sendGcodeSendingRequest(gcode[i])

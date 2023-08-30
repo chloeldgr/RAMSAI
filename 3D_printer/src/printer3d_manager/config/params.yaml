@@ -1,0 +1,4 @@
+printer3d_manager:
+  ros__parameters:
+    history_file_dir: "'/home/gulltor/printing_history'"
+    gcode_file_dir: "/home/gulltor/gcodeSample/test.gcode"

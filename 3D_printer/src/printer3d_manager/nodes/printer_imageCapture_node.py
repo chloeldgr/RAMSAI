@@ -24,28 +24,35 @@ import numpy as np
 
 
 class PrinterControlNode(Node):
-    def __init__(self, historyFilename):
+    def __init__(self):
         super().__init__('printer_control')
 
         """Initialisation of the printing process workspace"""
-        self.historyFilename = historyFilename
+        self.declare_parameter('history_file_dir', './printing_history')
+        historyFileDir = self.get_parameter('history_file_dir').get_parameter_value().string_value
+        self.historyFileDir = historyFileDir
+        self.get_logger().info(historyFileDir)
+        self.declare_parameter('gcode_file_dir', './piece.gcode')
+        self.gcodeFileDir = self.get_parameter('gcode_file_dir').get_parameter_value().string_value
+        self.get_logger().info(self.gcodeFileDir)
+
         try:
-            os.mkdir('/home/gulltor/Ramsai_Robotics/history/'+historyFilename)
+            os.mkdir(historyFileDir)
         except Exception:
             pass
 
         try:
-            os.mkdir('/home/gulltor/Ramsai_Robotics/history/'+historyFilename+'/gcode')
+            os.mkdir(historyFileDir+'/gcode')
         except Exception:
             pass
 
         try:
-            os.mkdir('/home/gulltor/Ramsai_Robotics/history/'+historyFilename+'/scan')
+            os.mkdir(historyFileDir+'/scan')
         except Exception:
             pass
 
         try:
-            os.mkdir('/home/gulltor/Ramsai_Robotics/history/'+historyFilename+'/photos')
+            os.mkdir(historyFileDir+'/photos')
         except Exception:
             pass
 
@@ -67,7 +74,7 @@ class PrinterControlNode(Node):
         self.scanNumber = 0
 
     def loadGcode(self, gcodeFilename):
-        fileFullGcode = open(gcodeFilename)
+        fileFullGcode = open(self.gcodeFileDir)
         rawGode = fileFullGcode.readlines()
         fileFullGcode.close()
 
@@ -113,7 +120,7 @@ class PrinterControlNode(Node):
     def takeCurrentLayerPhoto(self):
         gcodeMoveToPos = ['G28 X0 Y0\n', 'G1 Y' + str(printer3d_constant.YPOSPHOTO) + ' F2400\n']
         self.sendGcodeSendingRequest(gcodeMoveToPos)
-        self.sendImageCaptureRequest('/home/gulltor/Ramsai_Robotics/history/'+self.historyFilename+'/photos/layer_photo_'+str(self.imageNumber)+'.jpg')
+        self.sendImageCaptureRequest(self.historyFileDir+'/photos/layer_photo_'+str(self.imageNumber)+'.jpg')
         self.imageNumber += 1
         return 0
 
@@ -139,9 +146,9 @@ class PrinterControlNode(Node):
 if __name__ == '__main__':
     carriageReturn = ['G28\n']
     rclpy.init()
-    printer_control_node = PrinterControlNode('impression_base_50_pourcents')
+    printer_control_node = PrinterControlNode()
     printer_control_node.sendGcodeSendingRequest(carriageReturn)
-    gcode = printer_control_node.loadGcode('/home/gulltor/Ramsai_Robotics/Gcodes/piece_test_base.gcode')
+    gcode = printer_control_node.loadGcode()
     for i in range(0, len(gcode)-1):
         printer_control_node.get_logger.info('lancement de la couche '+str(i+1)+' sur '+str(len(gcode)-1))
         printer_control_node.sendGcodeSendingRequest(gcode[i])
