@@ -38,7 +38,10 @@ endif()
 
 install(
   PROGRAMS
-    nodes/printer_control_node.py
+    nodes/printer_node.py
+    nodes/printer_imageCapture_node.py
+    nodes/printer_scanner_node.py
+    nodes/printer_scanner_imageCapture_node.py
     nodes/printer_control_test.py
     nodes/printer3d_constant.py
     nodes/utility.py
