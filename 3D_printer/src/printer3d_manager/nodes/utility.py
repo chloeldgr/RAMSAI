@@ -112,3 +112,6 @@ def getBordersSimpleGcode(simpleGcode):
             if x < xMin:
                 xMin = x
     return (xMin, yMin, zMin, xMax, yMax, zMax)
+
+def follow_gcode_coordinates(gcodeLines):
+    return 0
