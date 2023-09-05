@@ -16,7 +16,7 @@
 import rclpy
 from rclpy.node import Node
 from printer3d_msgs.srv import GcodeCommand
-from utility import getBordersSimpleGcode, getBordersGcode, work_on_gcode_file
+from utility import getBordersSimpleGcode, getBordersGcode, work_on_gcode_file, follow_gcode_coordinates
 import printer3d_constant
 import os
 import numpy as np
@@ -63,6 +63,11 @@ class PrinterControlNode(Node):
         self.imageNumber = 0
         self.scanNumber = 0
 
+        self.last_x_value = 0
+        self.last_y_value = 0
+        self.last_z_value = 0
+        self.last_e_value = 0
+
     def loadGcode(self):
         fileFullGcode = open(self.gcodeFileDir)
         rawGode = fileFullGcode.readlines()
@@ -108,8 +113,22 @@ class PrinterControlNode(Node):
     def printCurrentLayer(self):
         return 0
 
+    def printLastPositions(self):
+        self.get_logger().info("Last Position : ("+str(self.last_x_value)+", "+str(self.last_y_value)+", "+str(self.last_z_value)+", "+str(self.last_e_value)+")\n")
+        return 0
+
     def sendGcodeSendingRequest(self, gcode):
         assert self.verifyGcodeBeforeSending(gcode) is True
+
+        (changed_x,changed_y,changed_z,changed_e) = follow_gcode_coordinates(gcode)
+        if changed_x != None:
+            self.last_x_value = changed_x
+        if changed_y != None:
+            self.last_y_value = changed_y
+        if changed_z != None:
+            self.last_z_value = changed_z
+        if changed_e != None:
+            self.last_e_value = changed_e
 
         self.req_printer_driver.gcode_strings = gcode
         self.future_printer_driver = self.client_printer_driver.call_async(self.req_printer_driver)
@@ -125,8 +144,9 @@ if __name__ == '__main__':
     printer_control_node.sendGcodeSendingRequest(carriageReturn)
     gcode = printer_control_node.loadGcode()
     for i in range(0, len(gcode)-1):
-        printer_control_node.get_logger.info('lancement de la couche '+str(i+1)+' sur '+str(len(gcode)-1))
+        printer_control_node.get_logger().info('lancement de la couche '+str(i+1)+' sur '+str(len(gcode)-1))
         printer_control_node.sendGcodeSendingRequest(gcode[i])
-        printer_control_node.get_logger.info('fin de la couche '+str(i+1)+' sur '+str(len(gcode)))
+        printer_control_node.printLastPositions()
+        printer_control_node.get_logger().info('fin de la couche '+str(i+1)+' sur '+str(len(gcode)))
         
     rclpy.shutdown()

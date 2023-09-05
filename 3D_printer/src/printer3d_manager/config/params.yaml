@@ -1,4 +1,4 @@
 printer3d_manager:
   ros__parameters:
     history_file_dir: "/home/gulltor/Ramsai_Robotics/history/test_printing_history"
-    gcode_file_dir: "/home/gulltor/Ramsai_Robotics/Gcodes/piece_test_base.gcode"
+    gcode_file_dir: "/home/gulltor/Ramsai_Robotics/Gcodes/test_gcode.gcode"

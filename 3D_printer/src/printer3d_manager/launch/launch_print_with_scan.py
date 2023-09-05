@@ -21,16 +21,18 @@ def generate_launch_description():
             name='gcode_monitor_node'
         ),
         Node(
-            package='printer3d_image_capture',
+            package='printer3d_profile_capture',
             namespace='printing_process',
-            executable='image_capture_node.py',
-            name='image_capture_node'
+            executable='gocator_sensor_node',
+            name='gocator_sensor'
         ),
         Node(
             package='printer3d_manager',
             namespace='printing_process',
-            executable='printer_imageCapture_node.py',
+            executable='printer_scanner_node.py',
             name='printer_control_node',
             parameters = [configYaml['printer3d_manager']['ros__parameters']]
         )
     ])
+
+        

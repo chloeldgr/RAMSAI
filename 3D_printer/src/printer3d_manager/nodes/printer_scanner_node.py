@@ -17,7 +17,7 @@ import rclpy
 from rclpy.node import Node
 from printer3d_msgs.srv import GcodeCommand
 from printer3d_gocator_msgs.srv import GocatorPTCloud
-from utility import getBordersSimpleGcode, getBordersGcode, work_on_gcode_file
+from utility import getBordersSimpleGcode, getBordersGcode, work_on_gcode_file, follow_gcode_coordinates
 import printer3d_constant
 import point_cloud2 as pc2
 import os
@@ -57,13 +57,6 @@ class PrinterControlNode(Node):
         except Exception:
             pass
 
-        # access to the profile measure service
-
-        self.client_profile_measure = self.create_client(GocatorPTCloud, 'gocator_get_profile')
-        while not self.client_profile_measure.wait_for_service(timeout_sec=1.0):
-            self.get_logger().info('profile measure service not available, waiting again...')
-        self.req_profile_measure = GocatorPTCloud.Request()
-
         # access to the printer driver service
 
         self.client_printer_driver = self.create_client(GcodeCommand, 'send_gcode')
@@ -71,14 +64,25 @@ class PrinterControlNode(Node):
             self.get_logger().info('profile measure service not available, waiting again...')
         self.req_printer_driver = GcodeCommand.Request()
 
+        # access to the profile measure service
+
+        self.client_profile_measure = self.create_client(GocatorPTCloud, 'gocator_get_profile')
+        while not self.client_profile_measure.wait_for_service(timeout_sec=1.0):
+            self.get_logger().info('profile measure service not available, waiting again...')
+        self.req_profile_measure = GocatorPTCloud.Request()
+
         self.imageNumber = 0
         self.scanNumber = 0
 
-    def loadGcode(self, gcodeFilename):
+        self.last_x_value = 0
+        self.last_y_value = 0
+        self.last_z_value = 0
+        self.last_e_value = 0
+
+    def loadGcode(self):
         fileFullGcode = open(self.gcodeFileDir)
         rawGode = fileFullGcode.readlines()
         fileFullGcode.close()
-
         (self.xMin, self.yMin, self.zMin, self.xMax, self.yMax, self.zMax) = getBordersGcode(rawGode)
         self.get_logger().info('xMin : ' + str(self.xMin))
         self.get_logger().info('xMax : ' + str(self.xMax))
@@ -172,8 +176,22 @@ class PrinterControlNode(Node):
                 break
         return profile_line
 
+    def printLastPositions(self):
+        self.get_logger().info("Last Position : ("+str(self.last_x_value)+", "+str(self.last_y_value)+", "+str(self.last_z_value)+", "+str(self.last_e_value)+")\n")
+        return 0
+
     def sendGcodeSendingRequest(self, gcode):
         assert self.verifyGcodeBeforeSending(gcode) is True
+
+        (changed_x,changed_y,changed_z,changed_e) = follow_gcode_coordinates(gcode)
+        if changed_x != None:
+            self.last_x_value = changed_x
+        if changed_y != None:
+            self.last_y_value = changed_y
+        if changed_z != None:
+            self.last_z_value = changed_z
+        if changed_e != None:
+            self.last_e_value = changed_e
 
         self.req_printer_driver.gcode_strings = gcode
         self.future_printer_driver = self.client_printer_driver.call_async(self.req_printer_driver)
@@ -189,9 +207,10 @@ if __name__ == '__main__':
     printer_control_node.sendGcodeSendingRequest(carriageReturn)
     gcode = printer_control_node.loadGcode()
     for i in range(0, len(gcode)-1):
-        printer_control_node.get_logger.info('lancement de la couche '+str(i+1)+' sur '+str(len(gcode)-1))
+        printer_control_node.get_logger().info('lancement de la couche '+str(i+1)+' sur '+str(len(gcode)-1))
         printer_control_node.sendGcodeSendingRequest(gcode[i])
-        printer_control_node.get_logger.info('fin de la couche '+str(i+1)+' sur '+str(len(gcode)))
+        printer_control_node.printLastPositions()
+        printer_control_node.get_logger().info('fin de la couche '+str(i+1)+' sur '+str(len(gcode)))
         printer_control_node.scanCurrentLayer(gcode[i])
         
     rclpy.shutdown()

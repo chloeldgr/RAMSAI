@@ -114,4 +114,29 @@ def getBordersSimpleGcode(simpleGcode):
     return (xMin, yMin, zMin, xMax, yMax, zMax)
 
 def follow_gcode_coordinates(gcodeLines):
-    return 0
+    lastX = None
+    lastY = None
+    lastZ = None
+    lastE = None
+    for line in gcodeLines:
+        if 'X' in line:
+            splittedLine = line.split(' ')
+            for elements in splittedLine:
+                if elements[0] == 'X':
+                    lastX = float(elements[1:])
+        if 'Y' in line:
+            splittedLine = line.split(' ')
+            for elements in splittedLine:
+                if elements[0] == 'Y':
+                    lastY = float(elements[1:])
+        if 'Z' in line:
+            splittedLine = line.split(' ')
+            for elements in splittedLine:
+                if elements[0] == 'Z':
+                    lastZ = float(elements[1:])
+        if 'E' in line:
+            splittedLine = line.split(' ')
+            for elements in splittedLine:
+                if elements[0] == 'E':
+                    lastE = float(elements[1:])
+    return (lastX,lastY,lastZ,lastE)
