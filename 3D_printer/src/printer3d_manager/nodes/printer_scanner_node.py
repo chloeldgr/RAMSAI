@@ -84,12 +84,12 @@ class PrinterControlNode(Node):
         rawGode = fileFullGcode.readlines()
         fileFullGcode.close()
         (self.xMin, self.yMin, self.zMin, self.xMax, self.yMax, self.zMax) = getBordersGcode(rawGode)
-        self.get_logger().info('xMin : ' + str(self.xMin))
-        self.get_logger().info('xMax : ' + str(self.xMax))
-        self.get_logger().info('yMin : ' + str(self.yMin))
-        self.get_logger().info('yMax : ' + str(self.yMax))
-        self.get_logger().info('zMin : ' + str(self.zMin))
-        self.get_logger().info('zMax : ' + str(self.zMax))
+        # self.get_logger().info('xMin : ' + str(self.xMin))
+        # self.get_logger().info('xMax : ' + str(self.xMax))
+        # self.get_logger().info('yMin : ' + str(self.yMin))
+        # self.get_logger().info('yMax : ' + str(self.yMax))
+        # self.get_logger().info('zMin : ' + str(self.zMin))
+        # self.get_logger().info('zMax : ' + str(self.zMax))
 
         assert self.xMin >= printer3d_constant.XMIN
         assert self.xMax <= printer3d_constant.XMAX
@@ -134,19 +134,24 @@ class PrinterControlNode(Node):
         gcodeScan[0].append('G1 Y' + str(Yinit-(margin/2)) + ' F1200\n')
         length = int((Yfinal-Yinit+margin)/step)
 
-        self.get_logger().info('scanning begin :')
-        self.get_logger().info('Yinit :' + str(Yinit))
-        self.get_logger().info('Yfinal :' + str(Yfinal))
-        self.get_logger().info('length :' + str(length))
+        self.get_logger().info('scanning begin')
+        # self.get_logger().info('Yinit :' + str(Yinit))
+        # self.get_logger().info('Yfinal :' + str(Yfinal))
+        # self.get_logger().info('length :' + str(length))
 
         for i in range(1, length):
             gcodeScan.append([])
             gcodeScan[-1].append('G1 Y' + str(Yinit-(margin/2)+(i*step))+'\n')
         surface = []
+        iterator = 0
         for movements in gcodeScan:
-            self.sendGcodeSendingRequest(movements)
+            if iterator == 0:
+                self.sendGcodeSendingRequest(movements, True)
+            else:
+                self.sendGcodeSendingRequest(movements)
             profileLine = self.sendProfileMeasureRequest()
             surface.append(profileLine)
+            iterator += 1
         np.save(self.historyFileDir+'/scan/layer_scan_'+str(self.scanNumber)+'.npy', np.array(surface))
         self.scanNumber += 1
         return surface
@@ -180,7 +185,7 @@ class PrinterControlNode(Node):
         self.get_logger().info("Last Position : ("+str(self.last_x_value)+", "+str(self.last_y_value)+", "+str(self.last_z_value)+", "+str(self.last_e_value)+")\n")
         return 0
 
-    def sendGcodeSendingRequest(self, gcode):
+    def sendGcodeSendingRequest(self, gcode, with_retraction = False):
         assert self.verifyGcodeBeforeSending(gcode) is True
 
         (changed_x,changed_y,changed_z,changed_e) = follow_gcode_coordinates(gcode)
@@ -193,7 +198,18 @@ class PrinterControlNode(Node):
         if changed_e != None:
             self.last_e_value = changed_e
 
-        self.req_printer_driver.gcode_strings = gcode
+        if with_retraction:
+            self.get_logger().info("retraction enclenchée")
+            self.req_printer_driver.gcode_strings = ['G1 F60 E'+str(self.last_e_value-printer3d_constant.RETRACTION_VALUE)+'\n']+gcode+['G1 F60 E'+str(self.last_e_value)+'\n']
+        else:
+            self.req_printer_driver.gcode_strings = gcode
+
+        fichier_sauvegarde = open(self.historyFileDir+'/gcode/sendedGcode.gcode','a')
+        for lines in self.req_printer_driver.gcode_strings:
+            fichier_sauvegarde.write(lines)
+        fichier_sauvegarde.close()
+
+
         self.future_printer_driver = self.client_printer_driver.call_async(self.req_printer_driver)
         while rclpy.ok():
             rclpy.spin_once(self)
@@ -210,7 +226,7 @@ if __name__ == '__main__':
         printer_control_node.get_logger().info('lancement de la couche '+str(i+1)+' sur '+str(len(gcode)-1))
         printer_control_node.sendGcodeSendingRequest(gcode[i])
         printer_control_node.printLastPositions()
-        printer_control_node.get_logger().info('fin de la couche '+str(i+1)+' sur '+str(len(gcode)))
+        printer_control_node.get_logger().info('fin de la couche '+str(i+1)+' sur '+str(len(gcode)-1))
         printer_control_node.scanCurrentLayer(gcode[i])
         
     rclpy.shutdown()

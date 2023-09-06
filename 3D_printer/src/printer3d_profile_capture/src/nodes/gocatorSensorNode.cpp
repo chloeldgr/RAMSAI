@@ -52,7 +52,7 @@ private:
     std::shared_ptr<printer3d_gocator_msgs::srv::GocatorPTCloud::Response> response)
   {
     pcl::PointCloud<pcl::PointXYZ> cloud;
-    RCLCPP_INFO(this->get_logger(), "Processing service request!");
+    // RCLCPP_INFO(this->get_logger(), "Processing service request!");
     gsensor_->start();
     gsensor_->sendTrigger();
     if (gsensor_->getProfile(cloud) == 1) {

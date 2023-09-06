@@ -148,5 +148,5 @@ if __name__ == '__main__':
         printer_control_node.sendGcodeSendingRequest(gcode[i])
         printer_control_node.printLastPositions()
         printer_control_node.get_logger().info('fin de la couche '+str(i+1)+' sur '+str(len(gcode)))
-        
+
     rclpy.shutdown()

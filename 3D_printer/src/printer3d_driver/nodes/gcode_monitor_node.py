@@ -91,7 +91,7 @@ class GcodeMonitorNode(Node):
 
         """
         gcode = request.gcode_strings
-        self.get_logger().info('Executing Gcode')
+        # self.get_logger().info('Executing Gcode')
         feedback = 0.0
         self.serialPort.flushInput()
         self.i = 0
@@ -133,7 +133,7 @@ class GcodeMonitorNode(Node):
             grbl_out = self.serialPort.readline()  # wait for response from printer
             grbl_out = grbl_out.strip().decode('ascii')
 
-        self.get_logger().info('gcode sending completely finished')
+        # self.get_logger().info('gcode sending completely finished')
         response.validation = True
 
         return response
