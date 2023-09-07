@@ -30,7 +30,7 @@ def generate_launch_description():
         Node(
             package='printer3d_profile_capture',
             namespace='printing_process',
-            executable='gocator_sensor_node.py',
+            executable='gocator_sensor_node',
             name='gocator_sensor_node'
         ),
         Node(

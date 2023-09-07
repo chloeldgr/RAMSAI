@@ -41,6 +41,6 @@ class ImageCaptureNode(Node):
 
 if __name__ == '__main__':
     rclpy.init()
-    image_capture_node = ImageCaptureNode(2)
+    image_capture_node = ImageCaptureNode(0)
     rclpy.spin(image_capture_node)
     rclpy.shutdown()

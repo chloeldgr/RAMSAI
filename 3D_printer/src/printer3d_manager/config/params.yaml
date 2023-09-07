@@ -1,4 +1,4 @@
 printer3d_manager:
   ros__parameters:
-    history_file_dir: "/home/gulltor/Ramsai_Robotics/history/test_retraction"
+    history_file_dir: "/home/gulltor/Ramsai_Robotics/history/impression_piece_ecroulement"
     gcode_file_dir: "/home/gulltor/Ramsai_Robotics/Gcodes/impression_piece_ecroulement.gcode"

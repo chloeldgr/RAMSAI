@@ -89,7 +89,7 @@ class ImageCaptureNode(Node):
 
 if __name__ == '__main__':
     rclpy.init()
-    image_capture_node = ImageCaptureNode(2)
+    image_capture_node = ImageCaptureNode(0)
     gcode = ['G28\n', 'G1 Y'+str(YPOSPHOTO)+' F2400\n']
     image_capture_node.sendGcodeSendingRequest(gcode)
     image_capture_node.showVideo()

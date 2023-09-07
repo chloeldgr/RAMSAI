@@ -89,7 +89,7 @@ class PrinterControlNode(Node):
 
     def takeCurrentLayerPhoto(self):
         gcodeMoveToPos = ['G28 X0 Y0\n', 'G1 Y' + str(printer3d_constant.YPOSPHOTO) + ' F2400\n']
-        self.sendGcodeSendingRequest(gcodeMoveToPos)
+        self.sendGcodeSendingRequest(gcodeMoveToPos,True,False)
         self.sendImageCaptureRequest(self.historyFileDir+'/photos/layer_photo_'+str(self.imageNumber)+'.jpg')
         self.imageNumber += 1
         return 0
@@ -167,10 +167,10 @@ class PrinterControlNode(Node):
             gcodeScan.append([])
             gcodeScan[-1].append('G1 Y' + str(Yinit-(margin/2)+(i*step))+'\n')
         surface = []
-        iterator = 0
+        iterator = len(gcodeScan)
         for movements in gcodeScan:
-            if iterator == 0:
-                self.sendGcodeSendingRequest(movements, True)
+            if iterator == len(gcodeScan)-1:
+                self.sendGcodeSendingRequest(movements, False, True)
             else:
                 self.sendGcodeSendingRequest(movements)
             profileLine = self.sendProfileMeasureRequest()
@@ -209,7 +209,7 @@ class PrinterControlNode(Node):
         self.get_logger().info("Last Position : ("+str(self.last_x_value)+", "+str(self.last_y_value)+", "+str(self.last_z_value)+", "+str(self.last_e_value)+")\n")
         return 0
 
-    def sendGcodeSendingRequest(self, gcode, with_retraction = False):
+    def sendGcodeSendingRequest(self, gcode, with_retraction = False, with_extrusion = False):
         assert self.verifyGcodeBeforeSending(gcode) is True
 
         (changed_x,changed_y,changed_z,changed_e) = follow_gcode_coordinates(gcode)
@@ -224,7 +224,10 @@ class PrinterControlNode(Node):
 
         if with_retraction:
             self.get_logger().info("retraction enclenchée")
-            self.req_printer_driver.gcode_strings = ['G1 F60 E'+str(self.last_e_value-printer3d_constant.RETRACTION_VALUE)+'\n']+gcode+['G1 F60 E'+str(self.last_e_value)+'\n']
+            self.req_printer_driver.gcode_strings = ['G1 F60 E'+str(self.last_e_value-printer3d_constant.RETRACTION_VALUE)+'\n']+gcode
+        elif with_extrusion:
+            self.get_logger().info("extrusion enclenchée")
+            self.req_printer_driver.gcode_strings = gcode+['G1 F60 E'+str(self.last_e_value)+'\n']
         else:
             self.req_printer_driver.gcode_strings = gcode
 
