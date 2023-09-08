@@ -255,6 +255,9 @@ if __name__ == '__main__':
         printer_control_node.printLastPositions()
         printer_control_node.get_logger().info('fin de la couche '+str(i+1)+' sur '+str(len(gcode)))
         printer_control_node.takeCurrentLayerPhoto()
-        printer_control_node.scanCurrentLayer(gcode[i])
+        if i == 0:
+            printer_control_node.scanCurrentLayer(gcode[i+1])
+        else:
+            printer_control_node.scanCurrentLayer(gcode[i])
         
     rclpy.shutdown()
