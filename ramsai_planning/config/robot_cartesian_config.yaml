@@ -1,10 +1,16 @@
 /**:
   ros__parameters:
     waypoint_file_type: "apt"
+    #waypoint_file_path: "$(find-pkg-share ramsai_planning)/config/example_apt/base.apt"
     waypoint_file_path: "$(find-pkg-share ramsai_planning)/config/example_apt/230623_demo_kuka_V1.apt"
-    shift: [0.0, 0.8, 0.1]
+    #waypoint_file_path: "$(find-pkg-share ramsai_planning)/config/example_apt/chloe_carre_1.apt"
+    #waypoint_file_path: "$(find-pkg-share ramsai_planning)/config/example_apt/3-2_ligne_unique.apt"
+    #waypoint_file_path: "$(find-pkg-share ramsai_planning)/config/example_apt/3-1_ligne.apt"
+    #waypoint_file_path: "$(find-pkg-share ramsai_planning)/config/example_apt/3-1_lignes_horizontales.apt"
+    #waypoint_file_path: "$(find-pkg-share ramsai_planning)/config/example_apt/4-1_carre_3d.apt"
+    shift: [0.0, -0.8, 0.1]
     scale: 0.001
-    velcocity_scaling: 0.02
-    acceleration_scaling: 0.1
+    velcocity_scaling: 0.03
+    acceleration_scaling: 0.03
     plot_waypoints: true
-    plot_frames: true
+    plot_frames: false

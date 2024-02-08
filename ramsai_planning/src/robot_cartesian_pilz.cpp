@@ -125,7 +125,11 @@ int main(int argc, char ** argv)
     req.start_state = moveit_msgs::msg::RobotState();
 
     motionItem.set__req(req);
-    motionItem.set__blend_radius(0.0);
+    if (w == waypoints.size() - 1) {
+      motionItem.set__blend_radius(0.0);
+    } else {
+      motionItem.set__blend_radius(0.02);
+    }
 
     sequenceRequest.items.push_back(motionItem);
   }

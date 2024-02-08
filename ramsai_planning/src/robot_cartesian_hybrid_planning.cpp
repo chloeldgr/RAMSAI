@@ -59,22 +59,21 @@ const rclcpp::Logger LOGGER = rclcpp::get_logger("robot_cartesian_hybrid_plannin
 class RobotCartesianHybridPlanning
 {
 public:
-  RobotCartesianHybridPlanning(const rclcpp::Node::SharedPtr& node)
+  RobotCartesianHybridPlanning(const rclcpp::Node::SharedPtr & node)
   {
     node_ = node;
 
     std::string hybrid_planning_action_name = "";
-    if (node_->has_parameter("hybrid_planning_action_name"))
-    {
+    if (node_->has_parameter("hybrid_planning_action_name")) {
       node_->get_parameter<std::string>("hybrid_planning_action_name", hybrid_planning_action_name);
-    }
-    else
-    {
+    } else {
       RCLCPP_ERROR(LOGGER, "hybrid_planning_action_name parameter was not defined");
       std::exit(EXIT_FAILURE);
     }
     hp_action_client_ =
-        rclcpp_action::create_client<moveit_msgs::action::HybridPlanner>(node_, hybrid_planning_action_name);
+      rclcpp_action::create_client<moveit_msgs::action::HybridPlanner>(
+      node_,
+      hybrid_planning_action_name);
   }
 
   void run()
@@ -83,30 +82,26 @@ public:
     tf_buffer_ = std::make_shared<tf2_ros::Buffer>(node_->get_clock());
 
     planning_scene_monitor_ = std::make_shared<planning_scene_monitor::PlanningSceneMonitor>(
-        node_, "robot_description", tf_buffer_, "planning_scene_monitor");
-    if (!planning_scene_monitor_->getPlanningScene())
-    {
+      node_, "robot_description", tf_buffer_, "planning_scene_monitor");
+    if (!planning_scene_monitor_->getPlanningScene()) {
       RCLCPP_ERROR(LOGGER, "The planning scene was not retrieved!");
       return;
-    }
-    else
-    {
+    } else {
       planning_scene_monitor_->startStateMonitor();
       planning_scene_monitor_->providePlanningSceneService();  // let RViz display query PlanningScene
       planning_scene_monitor_->setPlanningScenePublishingFrequency(100);
-      planning_scene_monitor_->startPublishingPlanningScene(planning_scene_monitor::PlanningSceneMonitor::UPDATE_SCENE,
-                                                            "/planning_scene");
+      planning_scene_monitor_->startPublishingPlanningScene(
+        planning_scene_monitor::PlanningSceneMonitor::UPDATE_SCENE,
+        "/planning_scene");
       planning_scene_monitor_->startSceneMonitor();
     }
 
-    if (!planning_scene_monitor_->waitForCurrentRobotState(node_->now(), 5))
-    {
+    if (!planning_scene_monitor_->waitForCurrentRobotState(node_->now(), 5)) {
       RCLCPP_ERROR(LOGGER, "Timeout when waiting for /joint_states updates. Is the robot running?");
       return;
     }
 
-    if (!hp_action_client_->wait_for_action_server(20s))
-    {
+    if (!hp_action_client_->wait_for_action_server(20s)) {
       RCLCPP_ERROR(LOGGER, "Hybrid planning action server not available after waiting");
       return;
     }
@@ -114,11 +109,12 @@ public:
     // Setup motion planning goal taken from motion_planning_api tutorial
     const std::string planning_group = "iiwa_arm";
     robot_model_loader::RobotModelLoader robot_model_loader(node_, "robot_description");
-    const moveit::core::RobotModelPtr& robot_model = robot_model_loader.getModel();
+    const moveit::core::RobotModelPtr & robot_model = robot_model_loader.getModel();
 
     // Create a RobotState and JointModelGroup
     const auto robot_state = std::make_shared<moveit::core::RobotState>(robot_model);
-    const moveit::core::JointModelGroup* joint_model_group = robot_state->getJointModelGroup(planning_group);
+    const moveit::core::JointModelGroup * joint_model_group = robot_state->getJointModelGroup(
+      planning_group);
 
     moveit::planning_interface::MoveGroupInterface move_group(node_, planning_group);
 
@@ -233,35 +229,38 @@ public:
     goal_action_request.planning_group = planning_group;
     goal_action_request.motion_sequence = sequence_request;
 
-    auto send_goal_options = rclcpp_action::Client<moveit_msgs::action::HybridPlanner>::SendGoalOptions();
+    auto send_goal_options =
+      rclcpp_action::Client<moveit_msgs::action::HybridPlanner>::SendGoalOptions();
     send_goal_options.result_callback =
-        [](const rclcpp_action::ClientGoalHandle<moveit_msgs::action::HybridPlanner>::WrappedResult& result) {
-          switch (result.code)
-          {
-            case rclcpp_action::ResultCode::SUCCEEDED:
-              RCLCPP_INFO(LOGGER, "Hybrid planning goal succeeded");
-              break;
-            case rclcpp_action::ResultCode::ABORTED:
-              RCLCPP_ERROR(LOGGER, "Hybrid planning goal was aborted");
-              return;
-            case rclcpp_action::ResultCode::CANCELED:
-              RCLCPP_ERROR(LOGGER, "Hybrid planning goal was canceled");
-              return;
-            default:
-              RCLCPP_ERROR(LOGGER, "Unknown hybrid planning result code");
-              return;
-              RCLCPP_INFO(LOGGER, "Hybrid planning result received");
-          }
-        };
+      [](const rclcpp_action::ClientGoalHandle<moveit_msgs::action::HybridPlanner>::WrappedResult &
+        result) {
+        switch (result.code) {
+          case rclcpp_action::ResultCode::SUCCEEDED:
+            RCLCPP_INFO(LOGGER, "Hybrid planning goal succeeded");
+            break;
+          case rclcpp_action::ResultCode::ABORTED:
+            RCLCPP_ERROR(LOGGER, "Hybrid planning goal was aborted");
+            return;
+          case rclcpp_action::ResultCode::CANCELED:
+            RCLCPP_ERROR(LOGGER, "Hybrid planning goal was canceled");
+            return;
+          default:
+            RCLCPP_ERROR(LOGGER, "Unknown hybrid planning result code");
+            return;
+            RCLCPP_INFO(LOGGER, "Hybrid planning result received");
+        }
+      };
     send_goal_options.feedback_callback =
-        [](const rclcpp_action::ClientGoalHandle<moveit_msgs::action::HybridPlanner>::SharedPtr& /*unused*/,
-           const std::shared_ptr<const moveit_msgs::action::HybridPlanner::Feedback>& feedback) {
-          RCLCPP_INFO_STREAM(LOGGER, feedback->feedback);
-        };
+      [](const rclcpp_action::ClientGoalHandle<moveit_msgs::action::HybridPlanner>::SharedPtr & /*unused*/,
+        const std::shared_ptr<const moveit_msgs::action::HybridPlanner::Feedback> & feedback) {
+        RCLCPP_INFO_STREAM(LOGGER, feedback->feedback);
+      };
 
     RCLCPP_INFO(LOGGER, "Sending hybrid planning goal");
     // Ask server to achieve some goal and wait until it's accepted
-    auto goal_handle_future = hp_action_client_->async_send_goal(goal_action_request, send_goal_options);
+    auto goal_handle_future = hp_action_client_->async_send_goal(
+      goal_action_request,
+      send_goal_options);
   }
 
 private:
@@ -275,18 +274,20 @@ private:
   std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
 };
 
-int main(int argc, char** argv)
+int main(int argc, char ** argv)
 {
   rclcpp::init(argc, argv);
   rclcpp::NodeOptions node_options;
   node_options.automatically_declare_parameters_from_overrides(true);
 
-  rclcpp::Node::SharedPtr node = std::make_shared<rclcpp::Node>("robot_cartesian_hybrid_planning", "", node_options);
+  rclcpp::Node::SharedPtr node = std::make_shared<rclcpp::Node>(
+    "robot_cartesian_hybrid_planning",
+    "", node_options);
 
   RobotCartesianHybridPlanning app(node);
   std::thread run_app([&app]() {
-    app.run();
-  });
+      app.run();
+    });
 
   rclcpp::spin(node);
   run_app.join();

@@ -196,7 +196,7 @@
           </geometry>
         </collision>
     </link>
-    <link name="${prefix}lid" type="fixed">
+    <!-- <link name="${prefix}lid" type="fixed">
         <visual>
           <origin rpy="0 0 1.5708" xyz="0 0 0"/>
           <material name="gray"/>
@@ -210,7 +210,7 @@
             <mesh filename="package://ramsai_description/meshes/viscotec/collision/cell.stl" scale ="0.001 0.001 0.001"/>
           </geometry>
         </collision>
-    </link>
+    </link> -->
     <link name="${prefix}flex_fellow" type="fixed">
         <visual>
           <origin rpy="3.1415 0 3.1415" xyz="0 0 0"/>
@@ -284,18 +284,18 @@
         <child link="${prefix}tip"/>
         <axis xyz="0 0 0"/>
     </joint>
-    <joint name="${prefix}joint_a7-tool0" type="fixed">
-        <origin rpy="0 0 1.57" xyz="0.0 0.0 0.0"/> <!--0.154-->
+    <joint name="${prefix}extruder" type="fixed">
+        <origin rpy="0 0 -1.57" xyz="0.0 0.0 0.0"/> <!--0.154-->
         <parent link="${prefix}tip"/>
         <child link="${prefix}tool0"/>
         <axis xyz="0 0 0"/>
     </joint>
-    <joint name="${prefix}joint_base-lid" type="fixed">
+    <!-- <joint name="${prefix}joint_base-lid" type="fixed">
         <origin rpy="0 0.0 0" xyz="${Ox} ${Oy} ${Oz}"/>
         <parent link="${prefix}iiwa_base"/>
         <child link="${prefix}lid"/>
         <axis xyz="0 0 0"/>
-    </joint>
+    </joint> -->
     <joint name="${prefix}joint_base-flex" type="fixed">
         <origin rpy="0 0 0" xyz="0 0 0"/>
         <parent link="${prefix}iiwa_base"/>

@@ -181,7 +181,7 @@ def generate_launch_description():
         'local_planner.yaml',
       ]
     )
-    
+
     hybrid_planning_manager_param = PathJoinSubstitution([
         FindPackageShare("ramsai_description"),
         'moveit2',

@@ -27,11 +27,7 @@ endif()
 # Install
 ################################################################################
 install(
-<<<<<<< Updated upstream
   DIRECTORY urdf meshes config moveit2 srdf rviz ros2_control
-=======
-  DIRECTORY urdf meshes config moveit2 srdf ros2_control
->>>>>>> Stashed changes
   DESTINATION share/${PROJECT_NAME}
 )
 

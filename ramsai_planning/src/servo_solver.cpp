@@ -7,34 +7,44 @@ namespace ramsai_planning
 {
 const rclcpp::Logger LOGGER = rclcpp::get_logger("local_planner_component");
 
-bool ServoSolver::initialize(const rclcpp::Node::SharedPtr& node,
-                             const planning_scene_monitor::PlanningSceneMonitorPtr& planning_scene_monitor,
-                             const std::string& group_name)
+bool ServoSolver::initialize(
+  const rclcpp::Node::SharedPtr & node,
+  const planning_scene_monitor::PlanningSceneMonitorPtr & planning_scene_monitor,
+  const std::string & group_name)
 {
   // Load parameter & initialize member variables
-  if (node->has_parameter("velocity_scaling_threshold"))
+  if (node->has_parameter("velocity_scaling_threshold")) {
     node->get_parameter<double>("velocity_scaling_threshold", velocity_scaling_threshold_);
-  else
-    velocity_scaling_threshold_ = node->declare_parameter<double>("velocity_scaling_threshold", 0.0);
+  } else {
+    velocity_scaling_threshold_ =
+      node->declare_parameter<double>("velocity_scaling_threshold", 0.0);
+  }
 
   planning_scene_monitor_ = planning_scene_monitor;
   node_handle_ = node;
-  
-  twist_cmd_pub_ = node_handle_->create_publisher<geometry_msgs::msg::TwistStamped>("~/delta_twist_cmds", 10);
-  joint_cmd_pub_ = node_handle_->create_publisher<control_msgs::msg::JointJog>("~/delta_joint_cmds", 10);
-  ee_tf_pub_ = node_handle_->create_publisher<geometry_msgs::msg::TransformStamped>("~/eef_position", 10);
+
+  twist_cmd_pub_ = node_handle_->create_publisher<geometry_msgs::msg::TwistStamped>(
+    "~/delta_twist_cmds", 10);
+  joint_cmd_pub_ = node_handle_->create_publisher<control_msgs::msg::JointJog>(
+    "~/delta_joint_cmds",
+    10);
+  ee_tf_pub_ = node_handle_->create_publisher<geometry_msgs::msg::TransformStamped>(
+    "~/eef_position", 10);
   tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(node_handle_);
 
   // Get Servo Parameters
-  servo_parameters_ = moveit_servo::ServoParameters::makeServoParameters(node_handle_, "moveit_servo");
-  if (!servo_parameters_)
-  {
+  servo_parameters_ = moveit_servo::ServoParameters::makeServoParameters(
+    node_handle_,
+    "moveit_servo");
+  if (!servo_parameters_) {
     RCLCPP_FATAL(LOGGER, "Failed to load the servo parameters");
     return false;
   }
 
   // Create Servo and start it
-  servo_ = std::make_unique<moveit_servo::Servo>(node_handle_, servo_parameters_, planning_scene_monitor_);
+  servo_ = std::make_unique<moveit_servo::Servo>(
+    node_handle_, servo_parameters_,
+    planning_scene_monitor_);
   servo_->start();
 
   return true;
@@ -44,12 +54,13 @@ bool ServoSolver::reset()
 {
   RCLCPP_INFO(LOGGER, "Reset Servo Solver");
   return true;
-};
+}
 
 moveit_msgs::action::LocalPlanner::Feedback
-ServoSolver::solve(const robot_trajectory::RobotTrajectory& local_trajectory,
-                   const std::shared_ptr<const moveit_msgs::action::LocalPlanner::Goal> local_goal,
-                   trajectory_msgs::msg::JointTrajectory& local_solution)
+ServoSolver::solve(
+  const robot_trajectory::RobotTrajectory & local_trajectory,
+  const std::shared_ptr<const moveit_msgs::action::LocalPlanner::Goal> local_goal,
+  trajectory_msgs::msg::JointTrajectory & local_solution)
 {
   // Create Feedback
   moveit_msgs::action::LocalPlanner::Feedback feedback_result;
@@ -61,15 +72,14 @@ ServoSolver::solve(const robot_trajectory::RobotTrajectory& local_trajectory,
   auto msg = std::make_unique<geometry_msgs::msg::TwistStamped>();
   msg->header.stamp = node_handle_->now();
 
-  if (!robot_command.joint_trajectory.points.empty())
-  {
+  if (!robot_command.joint_trajectory.points.empty()) {
     const auto current_state = planning_scene_monitor_->getStateMonitor()->getCurrentState();
 
-    for (int i=0; i < local_trajectory.getWayPointCount();i++) 
-    {
+    for (int i = 0; i < local_trajectory.getWayPointCount(); i++) {
       moveit::core::RobotState state(local_trajectory.getRobotModel());
-      state.setVariablePositions(robot_command.joint_trajectory.joint_names,
-                                      robot_command.joint_trajectory.points[i].positions);
+      state.setVariablePositions(
+        robot_command.joint_trajectory.joint_names,
+        robot_command.joint_trajectory.points[i].positions);
       state.update();
       Eigen::Isometry3d pose = state.getFrameTransform("tool0");
       Eigen::Quaterniond q(pose.linear());
@@ -88,8 +98,9 @@ ServoSolver::solve(const robot_trajectory::RobotTrajectory& local_trajectory,
     }
 
     moveit::core::RobotState target_state(local_trajectory.getRobotModel());
-    target_state.setVariablePositions(robot_command.joint_trajectory.joint_names,
-                                      robot_command.joint_trajectory.points[0].positions);
+    target_state.setVariablePositions(
+      robot_command.joint_trajectory.joint_names,
+      robot_command.joint_trajectory.points[0].positions);
     target_state.update();
 
     // TF planning_frame -> current EE
@@ -105,14 +116,24 @@ ServoSolver::solve(const robot_trajectory::RobotTrajectory& local_trajectory,
     Eigen::AngleAxisd axis_angle_target(target_pose.linear());
 
     constexpr double fixed_vel = 0.05;
-    const double vel_scale = fixed_vel / (target_pose.translation() - current_pose.translation()).norm();
+    const double vel_scale = fixed_vel /
+      (target_pose.translation() - current_pose.translation()).norm();
 
-    msg->twist.linear.x = (target_pose.translation().x() - current_pose.translation().x()) * vel_scale;
-    msg->twist.linear.y = (target_pose.translation().y() - current_pose.translation().y()) * vel_scale;
-    msg->twist.linear.z = (target_pose.translation().z() - current_pose.translation().z()) * vel_scale;
-    msg->twist.angular.x = (axis_angle_target.axis().x() * axis_angle_target.angle() - axis_angle_current.axis().x() * axis_angle_current.angle()) * vel_scale;
-    msg->twist.angular.y = (axis_angle_target.axis().y() * axis_angle_target.angle() - axis_angle_current.axis().y() * axis_angle_current.angle()) * vel_scale;
-    msg->twist.angular.z = (axis_angle_target.axis().z() * axis_angle_target.angle() - axis_angle_current.axis().z() * axis_angle_current.angle()) * vel_scale;
+    msg->twist.linear.x = (target_pose.translation().x() - current_pose.translation().x()) *
+      vel_scale;
+    msg->twist.linear.y = (target_pose.translation().y() - current_pose.translation().y()) *
+      vel_scale;
+    msg->twist.linear.z = (target_pose.translation().z() - current_pose.translation().z()) *
+      vel_scale;
+    msg->twist.angular.x =
+      (axis_angle_target.axis().x() * axis_angle_target.angle() - axis_angle_current.axis().x() *
+      axis_angle_current.angle()) * vel_scale;
+    msg->twist.angular.y =
+      (axis_angle_target.axis().y() * axis_angle_target.angle() - axis_angle_current.axis().y() *
+      axis_angle_current.angle()) * vel_scale;
+    msg->twist.angular.z =
+      (axis_angle_target.axis().z() * axis_angle_target.angle() - axis_angle_current.axis().z() *
+      axis_angle_current.angle()) * vel_scale;
     // Rotation joint is laser correction, not from delta-position
     // msg->twist.angular.z = 0;  // laser_correction_;
 
@@ -147,4 +168,6 @@ ServoSolver::solve(const robot_trajectory::RobotTrajectory& local_trajectory,
 
 #include <pluginlib/class_list_macros.hpp>
 
-PLUGINLIB_EXPORT_CLASS(ramsai_planning::ServoSolver, moveit::hybrid_planning::LocalConstraintSolverInterface);
+PLUGINLIB_EXPORT_CLASS(
+  ramsai_planning::ServoSolver,
+  moveit::hybrid_planning::LocalConstraintSolverInterface);

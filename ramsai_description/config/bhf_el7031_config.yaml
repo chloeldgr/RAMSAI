@@ -2,7 +2,7 @@
 vendor_id: 0x00000002
 product_id: 0x1b773052
 sdo:  # sdo data to be transferred at drive startup
-  - {index: 0x8012, sub_index: 1, type: bool, value: 1}
+  - {index: 0x8012, sub_index: 1, type: bool, value: 1} #Operation mode set to direct velocity
 rpdo:  # RxPDO
   - index: 0x1600
     channels:
@@ -17,7 +17,7 @@ rpdo:  # RxPDO
     channels:
       - {index: 0x7010, sub_index: 0x01, type: bool, mask: 1, command_interface: enable} # Enable
       - {index: 0x7010, sub_index: 0x02, type: bool, mask: 2, command_interface: reset} # Reset
-      - {index: 0x7010, sub_index: 0x03, type: bool} # Reduce torque 
+      - {index: 0x7010, sub_index: 0x03, type: bool} # Reduce torque
       - {index: 0x0000, sub_index: 0x00, type: bit5} # Gap
       - {index: 0x0000, sub_index: 0x00, type: bit8} # Gap
   - index: 0x1604

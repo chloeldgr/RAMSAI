@@ -30,7 +30,7 @@ const rclcpp::Logger LOGGER = rclcpp::get_logger("hybrid_planning_cancellation")
 
 }
 
-int main(int argc, char** argv)
+int main(int argc, char ** argv)
 {
   rclcpp::init(argc, argv);
   rclcpp::NodeOptions node_options;
@@ -38,20 +38,16 @@ int main(int argc, char** argv)
   auto node = rclcpp::Node::make_shared("hybrid_planning_cancellation", "", node_options);
 
   std::string hybrid_planning_action_name = "";
-  if (node->has_parameter("hybrid_planning_action_name"))
-  {
+  if (node->has_parameter("hybrid_planning_action_name")) {
     node->get_parameter<std::string>("hybrid_planning_action_name", hybrid_planning_action_name);
-  }
-  else
-  {
+  } else {
     RCLCPP_ERROR(LOGGER, "hybrid_planning_action_name parameter was not defined");
     std::exit(EXIT_FAILURE);
   }
 
   rclcpp_action::Client<HPAction>::SharedPtr client_ptr =
-      rclcpp_action::create_client<HPAction>(node, hybrid_planning_action_name);
-  if (!client_ptr->wait_for_action_server(std::chrono::seconds(5)))
-  {
+    rclcpp_action::create_client<HPAction>(node, hybrid_planning_action_name);
+  if (!client_ptr->wait_for_action_server(std::chrono::seconds(5))) {
     RCLCPP_ERROR(node->get_logger(), "Action server not available after waiting");
     rclcpp::shutdown();
   }
