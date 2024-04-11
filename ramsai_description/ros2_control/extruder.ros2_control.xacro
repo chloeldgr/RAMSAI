@@ -1,13 +1,17 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-  <xacro:macro name="extruder">
+  <xacro:macro 
+    name="r2c_extruder"
+    params="use_fake_hardware">
 
     <ros2_control name="extruder" type="system">
       <hardware>
-        <plugin>ethercat_driver/EthercatDriver</plugin>
-        <param name="master_id">0</param>
-        <param name="control_frequency">225</param>
+        <xacro:unless value="{$use_fake_hardware}">
+          <plugin>ethercat_driver/EthercatDriver</plugin>
+          <param name="master_id">0</param>
+          <param name="control_frequency">225</param>
+        </xacro:unless>
       </hardware>
 
       <joint name="extruder">
@@ -21,12 +25,15 @@
         <command_interface name="enable"/>
         <command_interface name="reset"/>
         <command_interface name="velocity"/>
-        <ec_module name="viprohead">
-          <plugin>ethercat_generic_plugins/GenericEcSlave</plugin>
-          <param name="alias">0</param>
-          <param name="position">1</param>
-          <param name="slave_config">$(find ramsai_description)/config/bhf_el7031_config.yaml</param>
-        </ec_module>
+
+        <xacro:unless value="${use_fake_hardware}">
+          <ec_module name="viprohead">
+            <plugin>ethercat_generic_plugins/GenericEcSlave</plugin>
+            <param name="alias">0</param>
+            <param name="position">1</param>
+            <param name="slave_config">$(find ramsai_description)/config/bhf_el7031_config.yaml</param>
+          </ec_module>
+         </xacro:unless> 
       </joint>
     </ros2_control>
 

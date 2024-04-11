@@ -35,7 +35,7 @@ def generate_launch_description():
     declared_arguments.append(
         DeclareLaunchArgument(
             'use_fake_hardware',
-            default_value='false',
+            default_value='true',
             description='Start robot with fake hardware mirroring command to its states.',
         )
     )
@@ -300,7 +300,7 @@ def generate_launch_description():
         delay_rviz_after_joint_state_broadcaster_spawner,
         external_torque_broadcaster_spawner,
         delay_robot_controller_spawner_after_joint_state_broadcaster_spawner,
-        gpio_command_controller
+        #gpio_command_controller
     ]
 
     return LaunchDescription(declared_arguments + nodes)

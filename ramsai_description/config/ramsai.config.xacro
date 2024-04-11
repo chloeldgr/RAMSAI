@@ -41,5 +41,5 @@
         use_sim="$(arg use_sim)" use_fake_hardware="$(arg use_fake_hardware)"
         />
 
-    <xacro:extruder/>
+<!--    <xacro:extruder/> -->
 </robot>
